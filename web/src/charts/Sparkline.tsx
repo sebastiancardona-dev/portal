@@ -30,8 +30,14 @@ export function Sparkline({
   const last = xy[xy.length - 1]
   return (
     <svg width={width} height={height} className="sparkline" aria-hidden="true">
-      <path d={monotonePath(xy)} fill="none" stroke="var(--spark)" strokeWidth={1.5} strokeLinecap="round" />
-      <circle cx={last.x} cy={last.y} r={2.5} fill="var(--accent)" stroke="var(--surface)" strokeWidth={1.5} />
+      <path
+        d={monotonePath(xy)}
+        fill="none"
+        stroke="color-mix(in srgb, var(--series-1) 75%, transparent)"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <circle cx={last.x} cy={last.y} r={2.5} fill="var(--series-1)" stroke="var(--surface)" strokeWidth={1.5} />
     </svg>
   )
 }

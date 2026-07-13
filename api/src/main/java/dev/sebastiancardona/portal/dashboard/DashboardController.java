@@ -39,17 +39,17 @@ public class DashboardController {
               {"id":"latency-tile","type":"stat-tile","x":6,"y":0,"w":3,"h":2,
                "config":{"source":"latency:moneytrckr:prod","label":"MoneyTrckr latency","sparkline":"off"}},
               {"id":"host-cpu-gauge","type":"gauge","x":9,"y":0,"w":3,"h":2,
-               "config":{"source":"host:cpu_pct","warn":"80","critical":"92"}},
+               "config":{"source":"host:cpu_pct","warn":"80","critical":"92","label":"Host CPU"}},
               {"id":"host-cpu-chart","type":"line-chart","x":0,"y":2,"w":6,"h":4,
                "config":{"source":"host:cpu_pct","kind":"area","range":"6h","bucket":"5m"}},
               {"id":"app-status","type":"status-list","x":6,"y":2,"w":6,"h":4,
-               "config":{}},
+               "config":{"label":"App status"}},
               {"id":"container-mem-donut","type":"donut","x":0,"y":6,"w":4,"h":4,
-               "config":{"dataset":"container-memory"}},
+               "config":{"dataset":"container-memory","label":"Container memory"}},
               {"id":"deploy-feed","type":"deploy-feed","x":4,"y":6,"w":4,"h":4,
-               "config":{}},
+               "config":{"label":"Recent deploys"}},
               {"id":"container-table","type":"table","x":8,"y":6,"w":4,"h":4,
-               "config":{"dataset":"containers"}}
+               "config":{"dataset":"containers","label":"Containers"}}
             ]}""";
 
     private final DashboardLayoutRepository layouts;

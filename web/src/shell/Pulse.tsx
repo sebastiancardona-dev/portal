@@ -1,7 +1,7 @@
 import { useApps, useSeries } from '../api/hooks'
 import type { Point } from '../api/types'
 import { fmtPct } from '../format'
-import { Led, type LedState } from '../ui'
+import { StatusDot, type StatusState } from '../ui'
 
 const W = 140
 const H = 26
@@ -9,7 +9,7 @@ const PAD = 2
 
 /**
  * The signature element of the portal: a slim live strip in the topbar —
- * a 30-minute host-CPU sparkline (the EKG of the VPS) + an "N/N UP" lamp.
+ * a 30-minute host-CPU sparkline (the EKG of the VPS) + an "N/N UP" chip.
  * Self-contained SVG on purpose: the topbar must never depend on charts/.
  */
 function SparkPath({ points }: { points: Point[] }) {
@@ -30,8 +30,8 @@ function SparkPath({ points }: { points: Point[] }) {
 
   return (
     <>
-      <path d={area} fill="var(--spark)" />
-      <path d={line} fill="none" stroke="var(--series-1)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <path d={area} fill="var(--accent)" opacity={0.08} />
+      <path d={line} fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
     </>
   )
 }
@@ -48,7 +48,7 @@ export function Pulse() {
     (a) => a.environments.length > 0 && a.environments.every((e) => e.up === true),
   ).length ?? 0
   const anyDown = apps.data?.some((a) => a.environments.some((e) => e.up === false)) ?? false
-  const lamp: LedState = !apps.data || total === 0 ? 'off' : anyDown ? 'down' : upCount === total ? 'ok' : 'off'
+  const chip: StatusState = !apps.data || total === 0 ? 'off' : anyDown ? 'down' : upCount === total ? 'ok' : 'off'
 
   return (
     <div className="pulse">
@@ -71,8 +71,8 @@ export function Pulse() {
       </svg>
       <span className="pulse-value">{last == null ? '—' : fmtPct(last)}</span>
       <span className="pulse-sep" aria-hidden="true" />
-      <Led
-        state={lamp}
+      <StatusDot
+        state={chip}
         label={apps.data ? `${upCount}/${total} UP` : '—/— UP'}
         title="apps fully up / apps discovered"
       />

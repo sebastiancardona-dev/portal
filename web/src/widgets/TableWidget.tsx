@@ -99,6 +99,7 @@ export const tableDef: WidgetDef = {
   category: 'composition',
   Preview: TablePreview,
   configSchema: [
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
     {
       key: 'dataset',
       label: 'Dataset',

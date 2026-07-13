@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { useLatest, useSeries, useSources } from '../api/hooks'
 import { fmtValue } from '../format'
 import { Quiet, RelTime, Skeleton, StatusPill } from '../ui'
@@ -18,11 +19,12 @@ function Delta({ points }: { points: { ts: string; value: number }[] }) {
   if (!Number.isFinite(first) || Math.abs(first) < 1e-9) return null
   const pct = ((last - first) / Math.abs(first)) * 100
   if (!Number.isFinite(pct)) return null
-  const arrow = pct > 0.05 ? '▲' : pct < -0.05 ? '▼' : '—'
+  const Arrow = pct > 0.05 ? ArrowUp : pct < -0.05 ? ArrowDown : Minus
   return (
     <span className="stat-delta">
       <span className="stat-delta-figure">
-        {arrow} {Math.abs(pct) < 0.05 ? '0.0' : Math.abs(pct).toFixed(1)}%
+        <Arrow size={11} strokeWidth={2} aria-hidden="true" />
+        {Math.abs(pct) < 0.05 ? '0.0' : Math.abs(pct).toFixed(1)}%
       </span>{' '}
       vs 6h ago
     </span>
@@ -43,11 +45,13 @@ function StatTile({ config, width }: WidgetProps) {
   // a 404 from /latest means "no data yet" (the source itself still exists —
   // vanished sources are caught above); it falls through to the isError branch
 
-  const label = config.label || source?.label || sourceId
+  // when the user set a title, the widget header already shows it — printing
+  // it again here would read twice; the source label still names the subject
+  const label = config.label ? null : source?.label || sourceId
 
   return (
     <div className="stat-tile">
-      <span className="stat-label">{label}</span>
+      {label != null && <span className="stat-label">{label}</span>}
       {latest.isPending ? (
         <Skeleton height={34} width="60%" />
       ) : latest.isError ? (
@@ -82,7 +86,7 @@ export const statTileDef: WidgetDef = {
   Preview: StatTilePreview,
   configSchema: [
     { key: 'source', label: 'Source', type: 'source', required: true },
-    { key: 'label', label: 'Label override', type: 'text', hint: 'defaults to the source label' },
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
     {
       key: 'sparkline',
       label: 'Sparkline',

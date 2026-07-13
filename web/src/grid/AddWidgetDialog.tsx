@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useApps, useSources } from '../api/hooks'
 import { SERIES_RANGES } from '../api/types'
 import { WidgetFrame } from '../widgets/WidgetFrame'
@@ -184,7 +185,7 @@ export function AddWidgetDialog({
         <div className="dialog-head">
           <h2>{step === 'configure' && selected ? `Configure ${selected.label.toLowerCase()}` : 'Add widget'}</h2>
           <button type="button" className="widget-remove" onClick={onClose} aria-label="Close">
-            ✕
+            <X size={16} strokeWidth={1.75} aria-hidden="true" />
           </button>
         </div>
 
@@ -228,7 +229,8 @@ export function AddWidgetDialog({
                 disabled={selected == null}
                 onClick={() => selected && goConfigure(selected)}
               >
-                Configure →
+                Configure
+                <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
               </button>
             </div>
           </>
@@ -270,7 +272,8 @@ export function AddWidgetDialog({
               </div>
               <div className="dialog-actions">
                 <button type="button" className="btn" onClick={() => setStep('gallery')}>
-                  ← Back
+                  <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
+                  Back
                 </button>
                 <button type="button" className="btn btn-primary" disabled={!valid} onClick={submit}>
                   Add to dashboard

@@ -1,4 +1,5 @@
 import { Component, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { fmtAbsolute, fmtRelative } from './format'
 
 /** Live content-box size of a div — page charts size themselves off this. */
@@ -20,38 +21,41 @@ export function useMeasure(): [RefObject<HTMLDivElement | null>, { width: number
   return [ref, size]
 }
 
-export type LedState = 'ok' | 'warn' | 'serious' | 'down' | 'off'
+export type StatusState = 'ok' | 'warn' | 'serious' | 'down' | 'off'
 
-/** Rack LED — 7px dot with a glow + label. Color NEVER carries meaning alone. */
-export function Led({
+/**
+ * StatusDot — 8px dot (soft 6px glow when lit) + label in --text.
+ * Color NEVER carries meaning alone; unknown = hollow dot.
+ */
+export function StatusDot({
   state,
   label,
   title,
 }: {
-  state: LedState
+  state: StatusState
   label?: string
   title?: string
 }) {
   return (
-    <span className={`led led-${state}`} title={title}>
-      <span className="led-dot" aria-hidden="true" />
-      {label != null && <span className="led-label">{label}</span>}
+    <span className={`sd sd-${state}`} title={title}>
+      <span className="sd-dot" aria-hidden="true" />
+      {label != null && <span className="sd-label">{label}</span>}
     </span>
   )
 }
 
-/** Aggregate LED for an app: any env down → down; all up → ok; unknown → off. */
-export function appLedState(envs: { up: boolean | null }[]): LedState {
+/** Aggregate status for an app: any env down → down; all up → ok; unknown → off. */
+export function appStatusState(envs: { up: boolean | null }[]): StatusState {
   if (envs.some((e) => e.up === false)) return 'down'
   if (envs.length > 0 && envs.every((e) => e.up === true)) return 'ok'
   return 'off'
 }
 
-/** UP/DOWN status as a rack LED — the label does the talking, not the color.
- *  null = never probed yet (an env without a discovered URL): dark LED. */
+/** UP/DOWN status dot — the label does the talking, not the color.
+ *  null = never probed yet (an env without a discovered URL): hollow dot. */
 export function StatusPill({ up }: { up: boolean | null }) {
-  if (up == null) return <Led state="off" label="N/A" />
-  return up ? <Led state="ok" label="UP" /> : <Led state="down" label="DOWN" />
+  if (up == null) return <StatusDot state="off" label="N/A" />
+  return up ? <StatusDot state="ok" label="UP" /> : <StatusDot state="down" label="DOWN" />
 }
 
 export function EnvBadge({ env }: { env: string }) {
@@ -80,6 +84,25 @@ export function Skeleton({ height = 20, width }: { height?: number; width?: stri
 /** Quiet placeholder for empty/missing data — never a crash, never a spinner farm. */
 export function Quiet({ children }: { children: ReactNode }) {
   return <div className="quiet">{children}</div>
+}
+
+/** Centered empty state: icon (20px, --text-3) + one sentence + optional action. */
+export function EmptyState({
+  icon,
+  children,
+  action,
+}: {
+  icon?: ReactNode
+  children: ReactNode
+  action?: ReactNode
+}) {
+  return (
+    <div className="empty-state">
+      {icon}
+      <p>{children}</p>
+      {action}
+    </div>
+  )
 }
 
 interface SortColumn<T> {
@@ -137,7 +160,12 @@ export function SortTable<T>({
                 <button type="button" className="th-sort" onClick={() => toggle(c.key)}>
                   {c.label}
                   <span className="sort-arrow" aria-hidden="true">
-                    {sort.key === c.key ? (sort.dir === 'asc' ? '↑' : '↓') : ''}
+                    {sort.key === c.key &&
+                      (sort.dir === 'asc' ? (
+                        <ChevronUp size={12} strokeWidth={2} />
+                      ) : (
+                        <ChevronDown size={12} strokeWidth={2} />
+                      ))}
                   </span>
                 </button>
               </th>

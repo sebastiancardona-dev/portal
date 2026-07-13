@@ -46,7 +46,7 @@ export function Gauge({
   const boxH = height - labelH
   // the 270° arc spans vertically from cy-r to cy+r·sin45 — size r to fit both axes
   const r = Math.max(Math.min((width - 16) / 2, (boxH - 10) / 1.72), 20)
-  const stroke = Math.max(6, Math.min(12, r * 0.16))
+  const stroke = Math.max(6, Math.min(18, r * 0.15)) // keeps heft at large sizes
   const cx = width / 2
   const cy = 5 + stroke / 2 + r
   const svgH = Math.min(boxH, cy + r * 0.72 + stroke)
@@ -101,11 +101,21 @@ export function Gauge({
         })}
       </svg>
       <div className="gauge-center" style={{ left: 0, right: 0, top: cy - r * 0.42 }}>
-        <span className="gauge-value" style={{ fontSize: Math.max(15, Math.min(28, r * 0.42)) }}>
+        <span className="gauge-value" style={{ fontSize: Math.max(15, Math.min(44, r * 0.38)) }}>
           {value != null ? fmtValue(value, unit) : '—'}
         </span>
         {band && (
           <span className="gauge-band" style={{ color: band.color }}>
+            <span
+              aria-hidden="true"
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: 'currentColor',
+                display: 'inline-block',
+              }}
+            />
             {band.label}
           </span>
         )}
@@ -113,7 +123,7 @@ export function Gauge({
           <span className="gauge-max">of {fmtValue(safeMax, unit)}</span>
         )}
       </div>
-      <span className="gauge-label">{label}</span>
+      {label !== '' && <span className="gauge-label">{label}</span>}
     </div>
   )
 }

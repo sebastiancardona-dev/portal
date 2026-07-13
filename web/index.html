@@ -1,22 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0e14" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F172A" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <title>Portal — ops</title>
     <meta name="description" content="Single pane of glass for the sebastiancardona.dev ecosystem." />
-    <script>
-      // set the theme before first paint — dark is the default for an ops tool
-      try {
-        var t = localStorage.getItem('portal-theme')
-        document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark'
-      } catch (e) {
-        document.documentElement.dataset.theme = 'dark'
-      }
-    </script>
   </head>
   <body>
     <div id="root"></div>

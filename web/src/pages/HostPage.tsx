@@ -17,6 +17,7 @@ function MeterTile({
   total,
   footnote,
   footnoteTitle,
+  absent,
 }: {
   label: string
   value: string
@@ -24,26 +25,34 @@ function MeterTile({
   total?: number | null
   footnote?: string
   footnoteTitle?: string
+  /** data deliberately not collected here — say so instead of inventing numbers */
+  absent?: boolean
 }) {
   const pct = used != null && total ? (used / total) * 100 : null
   return (
     <div className="panel metric-tile">
       <span className="eyebrow">{label}</span>
-      <span className="metric-value">{value}</span>
-      {pct != null && (
+      {absent ? (
+        <span className="metric-absent">Not measured in this environment</span>
+      ) : (
         <>
-          <div className="meter" role="presentation">
-            <div className={`meter-fill ${meterClass(pct)}`} style={{ width: `${Math.min(pct, 100)}%` }} />
-          </div>
-          <span className="metric-sub">
-            {fmtPct(pct)} of {fmtBytes(total!)}
-          </span>
+          <span className="metric-value">{value}</span>
+          {pct != null && (
+            <>
+              <div className="meter" role="presentation">
+                <div className={`meter-fill ${meterClass(pct)}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+              </div>
+              <span className="metric-sub">
+                {fmtPct(pct)} of {fmtBytes(total!)}
+              </span>
+            </>
+          )}
+          {footnote && (
+            <span className="metric-note" title={footnoteTitle}>
+              {footnote}
+            </span>
+          )}
         </>
-      )}
-      {footnote && (
-        <span className="metric-note" title={footnoteTitle}>
-          {footnote}
-        </span>
       )}
     </div>
   )
@@ -172,8 +181,15 @@ export function HostPage() {
             value={fmtBytes(host.data.diskUsedBytes)}
             used={host.data.diskUsedBytes}
             total={host.data.diskTotalBytes}
-            footnote={host.data.diskPath ? `measuring: ${host.data.diskPath}` : undefined}
-            footnoteTitle="usage of the filesystem containing this path — on the VPS this is the root disk"
+            absent={host.data.diskUsedBytes == null}
+            footnote={
+              host.data.diskPath
+                ? host.data.diskPath === '/data/deploy/state'
+                  ? 'root disk (/)'
+                  : host.data.diskPath
+                : undefined
+            }
+            footnoteTitle="usage of the filesystem containing the deploy state — on the VPS this is the root disk"
           />
         </div>
       )}

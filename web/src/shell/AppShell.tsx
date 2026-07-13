@@ -1,12 +1,26 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import {
+  Boxes,
+  Check,
+  Clock,
+  LayoutDashboard,
+  LogOut,
+  Pencil,
+  Rss,
+  Search,
+  Server,
+  Settings,
+  Users,
+} from 'lucide-react'
 import { logout } from '../api/client'
 import { useApps, useMe } from '../api/hooks'
-import { useTheme } from '../theme/ThemeContext'
-import { appLedState, Led } from '../ui'
+import { appStatusState, StatusDot } from '../ui'
 import { CommandPalette } from './CommandPalette'
 import { DashboardChromeProvider, useDashboardChrome } from './DashboardChrome'
 import { Pulse } from './Pulse'
+
+const ICON = { size: 16, strokeWidth: 1.75 } as const
 
 function EditLayoutControls() {
   const { onDashboard, editing, dirty, saving, setEditing } = useDashboardChrome()
@@ -18,7 +32,8 @@ function EditLayoutControls() {
           {saving ? 'saving…' : dirty ? 'unsaved changes' : 'saved'}
         </span>
       )}
-      <button type="button" className={`btn${editing ? ' btn-primary' : ''}`} onClick={() => setEditing(!editing)}>
+      <button type="button" className={`btn btn-sm${editing ? ' btn-primary' : ''}`} onClick={() => setEditing(!editing)}>
+        {editing ? <Check {...ICON} /> : <Pencil size={14} strokeWidth={1.75} />}
         {editing ? 'Done editing' : 'Edit layout'}
       </button>
     </div>
@@ -26,11 +41,11 @@ function EditLayoutControls() {
 }
 
 /** The modules the ecosystem plan promises (projects 07/08/05) — the shell
- *  anticipates them so the sidebar reads as an instrument being built out. */
+ *  anticipates them so the sidebar reads as a console being built out. */
 const PLANNED_MODULES = [
-  { glyph: 'LG', label: 'Logs' },
-  { glyph: 'VN', label: 'Versions' },
-  { glyph: 'AC', label: 'Accounts' },
+  { icon: Rss, label: 'Logs' },
+  { icon: Clock, label: 'Versions' },
+  { icon: Users, label: 'Accounts' },
 ]
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
@@ -38,7 +53,6 @@ const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 export function AppShell() {
   const apps = useApps()
   const me = useMe()
-  const { mode, toggle } = useTheme()
   const [paletteOpen, setPaletteOpen] = useState(false)
 
   useEffect(() => {
@@ -57,62 +71,52 @@ export function AppShell() {
       <div className="shell">
         <aside className="sidebar">
           <NavLink to="/" className="brand" title="Portal — dashboard">
-            <span className="brand-name">PORTAL</span>
+            <span className="brand-name">Portal</span>
             <span className="brand-domain">sebastiancardona.dev</span>
           </NavLink>
 
           <nav className="nav" aria-label="Primary">
-            <span className="nav-eyebrow">Observe</span>
+            <span className="nav-section">Observe</span>
             <NavLink to="/" end title="Dashboard">
-              <span className="nav-glyph" aria-hidden="true">DA</span>
+              <LayoutDashboard {...ICON} aria-hidden="true" />
               <span className="nav-label">Dashboard</span>
             </NavLink>
             <NavLink to="/apps" end title="Apps">
-              <span className="nav-glyph" aria-hidden="true">AP</span>
+              <Boxes {...ICON} aria-hidden="true" />
               <span className="nav-label">Apps</span>
             </NavLink>
             <NavLink to="/host" title="Host">
-              <span className="nav-glyph" aria-hidden="true">HO</span>
+              <Server {...ICON} aria-hidden="true" />
               <span className="nav-label">Host</span>
             </NavLink>
 
-            <span className="nav-eyebrow">Apps</span>
+            <span className="nav-section">Apps</span>
             {apps.isPending && <span className="nav-quiet">discovering…</span>}
             {apps.data?.length === 0 && <span className="nav-quiet">none discovered yet</span>}
             {apps.data?.map((app) => (
               <NavLink key={app.app} to={`/apps/${app.app}`} title={app.displayName || app.app}>
-                <Led state={appLedState(app.environments)} />
+                <StatusDot state={appStatusState(app.environments)} />
                 <span className="nav-label nav-app">{app.displayName || app.app}</span>
               </NavLink>
             ))}
 
-            <span className="nav-eyebrow">Modules</span>
+            <span className="nav-section">Modules</span>
             {PLANNED_MODULES.map((m) => (
-              <div key={m.label} className="nav-row nav-planned" title={`${m.label} — planned module`}>
-                <span className="nav-glyph" aria-hidden="true">{m.glyph}</span>
+              <div key={m.label} className="nav-row nav-module" title={`${m.label} — planned module`}>
+                <m.icon {...ICON} aria-hidden="true" />
                 <span className="nav-label">{m.label}</span>
-                <span className="planned-tag">planned</span>
+                <span className="soon-tag">soon</span>
               </div>
             ))}
 
-            <span className="nav-eyebrow">Configure</span>
+            <span className="nav-section">Configure</span>
             <NavLink to="/settings" title="Settings">
-              <span className="nav-glyph" aria-hidden="true">SE</span>
+              <Settings {...ICON} aria-hidden="true" />
               <span className="nav-label">Settings</span>
             </NavLink>
           </nav>
 
-          <div className="sidebar-foot">
-            <span className="foot-copy">read-only by construction</span>
-            <button
-              type="button"
-              className="btn btn-ghost theme-toggle"
-              onClick={toggle}
-              title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} theme`}
-            >
-              {mode === 'dark' ? '☀' : '☾'}
-            </button>
-          </div>
+          <div className="sidebar-foot">read-only by construction</div>
         </aside>
 
         <div className="shell-main">
@@ -124,16 +128,23 @@ export function AppShell() {
               onClick={() => setPaletteOpen(true)}
               aria-haspopup="dialog"
             >
-              <span className="search-hint">Search…</span>
-              <kbd>{IS_MAC ? '⌘K' : 'Ctrl+K'}</kbd>
+              <Search {...ICON} aria-hidden="true" />
+              <span className="search-hint">Search</span>
+              <kbd>{IS_MAC ? 'Cmd K' : 'Ctrl K'}</kbd>
             </button>
             <div className="topbar-spacer" />
             <EditLayoutControls />
             <span className="topbar-user" title={me.data ? `${me.data.name} · ${me.data.role}` : undefined}>
               {me.data?.email ?? ''}
             </span>
-            <button type="button" className="btn btn-ghost" onClick={() => logout()}>
-              Log out
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm btn-icon"
+              onClick={() => logout()}
+              title="Log out"
+              aria-label="Log out"
+            >
+              <LogOut {...ICON} aria-hidden="true" />
             </button>
           </header>
           <main className="content">

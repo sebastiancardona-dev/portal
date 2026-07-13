@@ -57,7 +57,10 @@ export const uptimeHeatmapDef: WidgetDef = {
   description: 'One app, seven days of hourly uptime — green means quiet, anything else means look.',
   category: 'health',
   Preview: UptimeHeatmapPreview,
-  configSchema: [{ key: 'app', label: 'App', type: 'app', required: true }],
+  configSchema: [
+    { key: 'app', label: 'App', type: 'app', required: true },
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
+  ],
   defaultSize: { w: 6, h: 2 },
   minSize: { w: 3, h: 2 },
   component: UptimeHeatmapWidget,

@@ -1,46 +1,49 @@
 /*
- * Portal design tokens — "instrument panel" direction.
+ * Portal design tokens — Dark Mode (OLED), dark ONLY.
  *
- * The portal is the control room of a one-VPS ecosystem: dense, dark-first,
- * blue-black surfaces like a rack room at night; IBM Plex (the ecosystem face)
- * with MONO carrying all data, labels-as-eyebrows, and versions; status told
- * by rack-LEDs (dot + glow + label, never color alone); one signal-indigo
- * accent reserved strictly for interaction (focus, active nav, primary
- * actions, edit mode) — it never appears inside a chart.
+ * One theme, tested, correct. Slate surfaces (#0F172A page, #1E293B cards),
+ * VISIBLE #334155 card borders, green (#22C55E) as the single interaction
+ * accent, Inter for UI, JetBrains Mono for data. Status is always icon/label
+ * + color, never color alone.
  *
- * Chart colors follow the dataviz method: the 8-slot categorical palette was
- * validated with scripts/validate_palette.js against BOTH surfaces below
- * (dark #141821: all pass, CVD floor band → legends + direct labels + 2px
- * gaps are mandatory; light #fbfbfa: slots 2/3/7 sub-3:1 → relief rule:
- * visible labels or table view). Status colors are reserved and never
- * impersonate a series. Sequential ramp = one blue hue for magnitude
- * (heatmaps); text always wears ink tokens, never series colors.
+ * CONTRAST LAW: every piece of text >= 4.5:1 against what it sits on.
+ * --text-3 (#64748B) is the DIMMEST allowed text and only for <=12px
+ * auxiliary labels. Axis ticks and legends wear --text-2 (#94A3B8).
+ * Every SVG <text> node carries an explicit fill from these tokens.
  */
 
 :root {
   /* type */
-  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  /* eyebrow: composed as font: 500 var(--eyebrow-size)/1 var(--font-mono);
-     letter-spacing var(--eyebrow-track); uppercase; color var(--muted) */
-  --eyebrow-size: 10px;
-  --eyebrow-track: 0.09em;
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
-  /* dark: the default control-room surface (blue-tinted, never pure black) */
-  --bg: #0b0e14;
-  --surface: #121722;
-  --surface-2: #19202e;
-  --ink: #e7eaf0;
-  --muted: #8d94a3;
-  --line: #222937;
-  --line-strong: #364052;
+  /* surfaces */
+  --bg: #0f172a; /* page */
+  --surface: #1e293b; /* cards, panels */
+  --surface-2: #273449; /* raised: hovers, dialogs, table headers */
+  --border: #334155; /* card edges — always visible */
+  --border-strong: #475569; /* dividers that must pop, focused inputs */
 
-  /* interaction accent — UI only, never a series, never a status */
-  --accent: #8b9bff;
-  --accent-ink: #0b0e14;
+  /* ink */
+  --text: #f8fafc; /* primary */
+  --text-2: #94a3b8; /* secondary */
+  --text-3: #64748b; /* dimmest allowed — <=12px auxiliary labels only */
+
+  /* interaction accent — primary actions, active nav, focus, "run green" */
+  --accent: #22c55e;
+  --accent-ink: #052e16;
   --accent-wash: color-mix(in srgb, var(--accent) 12%, transparent);
 
-  /* categorical series, fixed order (dark steps, validated on #141821) */
+  /* status — always paired with a label or icon */
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --down: #ef4444;
+  --status-unknown: #64748b;
+  --glow-ok: 0 0 6px color-mix(in srgb, var(--ok) 70%, transparent);
+  --glow-warn: 0 0 6px color-mix(in srgb, var(--warn) 70%, transparent);
+  --glow-down: 0 0 6px color-mix(in srgb, var(--down) 70%, transparent);
+
+  /* categorical chart series — validated colorblind-safe set, fixed order */
   --series-1: #3987e5;
   --series-2: #199e70;
   --series-3: #c98500;
@@ -50,80 +53,25 @@
   --series-7: #d55181;
   --series-8: #d95926;
 
-  /* sequential ramp (magnitude only: heatmaps, meters) — one hue, light→dark */
-  --seq-1: #cde2fb;
-  --seq-2: #9ec5f4;
-  --seq-3: #6da7ec;
-  --seq-4: #3987e5;
-  --seq-5: #256abf;
-  --seq-6: #184f95;
-  --seq-7: #0d366b;
+  /* sequential ramp (magnitude only — gauges); dim -> bright on dark */
+  --seq-1: #1e3a8a;
+  --seq-2: #1d4ed8;
+  --seq-3: #2563eb;
+  --seq-4: #3b82f6;
+  --seq-5: #60a5fa;
+  --seq-6: #93c5fd;
+  --seq-7: #bfdbfe;
 
-  /* status — reserved; shipped as LED (dot+glow) + label, never color alone */
-  --ok: #0ca30c;
-  --warn: #fab219;
-  --serious: #ec835a;
-  --down: #d03b3b;
-  --led-glow-ok: 0 0 6px color-mix(in srgb, var(--ok) 70%, transparent);
-  --led-glow-warn: 0 0 6px color-mix(in srgb, var(--warn) 70%, transparent);
-  --led-glow-down: 0 0 6px color-mix(in srgb, var(--down) 70%, transparent);
-  --led-off: #4a5262;
+  /* chart chrome */
+  --chart-grid: #334155; /* drawn at 60% opacity as hairlines */
+  --chart-baseline: #475569;
+  --chart-crosshair: #475569;
 
-  /* chart chrome (recessive: grid < baseline < ink) */
-  --chart-surface: #141821;
-  --chart-grid: #222937;
-  --chart-baseline: #364052;
-  --spark: color-mix(in srgb, var(--series-1) 45%, transparent);
-
-  /* geometry: instrument, not bubbly */
-  --radius: 6px;
-  --radius-sm: 4px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
-  --pad-panel: 14px 16px;
-}
-
-:root[data-theme='light'] {
-  --bg: #f3f4f6;
-  --surface: #fbfbfa;
-  --surface-2: #ffffff;
-  --ink: #14161c;
-  --muted: #5b6070;
-  --line: #e2e2dd;
-  --line-strong: #c4c4bc;
-
-  --accent: #4353d8;
-  --accent-ink: #ffffff;
-  --accent-wash: color-mix(in srgb, var(--accent) 9%, transparent);
-
-  /* categorical series (light steps, validated on #fbfbfa; slots 2/3/7 need
-     the relief rule: visible direct labels or a table view) */
-  --series-1: #2a78d6;
-  --series-2: #1baf7a;
-  --series-3: #eda100;
-  --series-4: #008300;
-  --series-5: #4a3aa7;
-  --series-6: #e34948;
-  --series-7: #e87ba4;
-  --series-8: #eb6834;
-
-  --seq-1: #cde2fb;
-  --seq-2: #9ec5f4;
-  --seq-3: #6da7ec;
-  --seq-4: #3987e5;
-  --seq-5: #256abf;
-  --seq-6: #184f95;
-  --seq-7: #0d366b;
-
-  --ok: #0a8a0a;
-  --warn: #b57500; /* darker step so warning TEXT stays legible on light */
-  --serious: #c25f38;
-  --down: #d03b3b;
-
-  --chart-surface: #fbfbfa;
-  --chart-grid: #e2e2dd;
-  --chart-baseline: #c4c4bc;
-
-  --shadow: 0 1px 2px rgb(20 22 28 / 0.06), 0 8px 24px rgb(20 22 28 / 0.08);
+  /* geometry + effects: barely-there shadows, no glows except status dots */
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+  --ease: 150ms ease-out;
 }
 
 * {
@@ -138,10 +86,10 @@ body {
   margin: 0;
   min-height: 100%;
   background: var(--bg);
-  color: var(--ink);
+  color: var(--text);
   font-family: var(--font-ui);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -152,6 +100,10 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

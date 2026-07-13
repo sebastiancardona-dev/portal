@@ -46,6 +46,7 @@ export const donutDef: WidgetDef = {
   category: 'composition',
   Preview: DonutPreview,
   configSchema: [
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
     {
       key: 'dataset',
       label: 'Dataset',

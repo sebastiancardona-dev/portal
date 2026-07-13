@@ -51,7 +51,9 @@ function GaugeWidget({ config, width, height }: WidgetProps) {
     <Gauge
       value={value}
       max={max}
-      label={config.label || source?.label || sourceId}
+      // with a user title the widget header names the subject — an empty
+      // label keeps the dial itself quiet instead of saying it twice
+      label={config.label ? '' : source?.label || sourceId}
       unit={source?.unit}
       width={width}
       height={height}
@@ -77,7 +79,7 @@ export const gaugeDef: WidgetDef = {
     },
     { key: 'warn', label: 'Warn at', type: 'text', hint: 'optional threshold, in the source unit' },
     { key: 'critical', label: 'Critical at', type: 'text', hint: 'optional — requires warn too' },
-    { key: 'label', label: 'Label override', type: 'text' },
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
   ],
   defaultSize: { w: 3, h: 2 },
   minSize: { w: 2, h: 2 },

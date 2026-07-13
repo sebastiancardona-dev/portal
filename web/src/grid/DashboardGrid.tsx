@@ -1,4 +1,5 @@
 import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from 'react'
+import { LayoutDashboard } from 'lucide-react'
 import { GridStack, type GridItemHTMLElement } from 'gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import type { DashboardLayout, LayoutWidget } from '../api/types'
@@ -48,7 +49,8 @@ export function DashboardGrid({
         auto: false, // the reconcile effect below registers items with their real geometry
         column: 12,
         cellHeight: 88,
-        margin: 8,
+        margin: 6, // 12px visible gutter between cards
+
         float: true,
         staticGrid: !editingRef.current,
         handle: '.widget-drag',
@@ -138,7 +140,7 @@ export function DashboardGrid({
   }))
 
   return (
-    <div className="grid-stack" ref={rootRef}>
+    <div className={`grid-stack${editing ? ' editing' : ''}`} ref={rootRef}>
       {items.map((it) => (
         <div
           key={it.id}
@@ -160,7 +162,7 @@ export function DashboardGrid({
       ))}
       {items.length === 0 && (
         <div className="grid-empty-panel">
-          <span className="grid-empty-eyebrow">empty dashboard</span>
+          <LayoutDashboard size={20} strokeWidth={1.75} aria-hidden="true" />
           <span className="grid-empty-title">Build your control room</span>
           <p className="grid-empty-hint">
             {editing

@@ -1,24 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { Check, Copy, ExternalLink } from 'lucide-react'
 import { ApiError } from '../api/client'
 import { useApp, useMultiSeries } from '../api/hooks'
 import type { AppDetail } from '../api/types'
 import { HeatStrip, TimeSeriesChart } from '../charts'
 import { fmtBytes, fmtMs, fmtPct, shortSha } from '../format'
 import {
-  appLedState,
+  appStatusState,
   EnvBadge,
-  Led,
   Quiet,
   RelTime,
   Skeleton,
   SortTable,
+  StatusDot,
   useMeasure,
-  type LedState,
+  type StatusState,
 } from '../ui'
 import { AppIcon } from './AppsPage'
 
-function containerLed(state: string): LedState {
+function containerStatus(state: string): StatusState {
   const s = state.toLowerCase()
   if (s === 'running') return 'ok'
   if (s === 'restarting' || s === 'paused') return 'warn'
@@ -26,7 +27,7 @@ function containerLed(state: string): LedState {
   return 'off'
 }
 
-function eventLed(event: string): LedState {
+function eventStatus(event: string): StatusState {
   const e = event.toLowerCase()
   if (e.includes('rollback') || e.includes('rolled back')) return 'serious'
   if (e.includes('fail')) return 'down'
@@ -46,7 +47,7 @@ function CopySha({ sha }: { sha: string | null }) {
   return (
     <button
       type="button"
-      className="copy-sha"
+      className={`copy-sha${copied ? ' copied' : ''}`}
       title={`${sha} — click to copy`}
       onClick={() => {
         navigator.clipboard?.writeText(sha).then(
@@ -55,6 +56,11 @@ function CopySha({ sha }: { sha: string | null }) {
         )
       }}
     >
+      {copied ? (
+        <Check size={12} strokeWidth={2} aria-hidden="true" />
+      ) : (
+        <Copy size={12} strokeWidth={1.75} aria-hidden="true" />
+      )}
       {copied ? 'copied' : shortSha(sha)}
     </button>
   )
@@ -146,14 +152,15 @@ export function AppDetailPage() {
         <div className="page-id">
           <span className="eyebrow">Application</span>
           <div className="page-title-row">
-            <Led state={appLedState(app.environments)} />
+            <StatusDot state={appStatusState(app.environments)} />
             <AppIcon app={app} />
             <h1 className="page-title">{app.displayName || app.app}</h1>
           </div>
         </div>
         {app.url && (
-          <a className="btn btn-ghost" href={app.url} target="_blank" rel="noreferrer">
-            open ↗
+          <a className="btn btn-ghost btn-sm" href={app.url} target="_blank" rel="noreferrer">
+            open
+            <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
           </a>
         )}
       </header>
@@ -164,10 +171,17 @@ export function AppDetailPage() {
           <div key={env.env} className="panel env-block">
             <div className="env-block-head">
               <EnvBadge env={env.env} />
-              {env.up == null ? <Led state="off" label="N/A" /> : env.up ? <Led state="ok" label="UP" /> : <Led state="down" label="DOWN" />}
+              {env.up == null ? (
+                <StatusDot state="off" label="N/A" />
+              ) : env.up ? (
+                <StatusDot state="ok" label="UP" />
+              ) : (
+                <StatusDot state="down" label="DOWN" />
+              )}
               {env.url && (
                 <a className="env-url" href={env.url} target="_blank" rel="noreferrer">
-                  {env.url.replace(/^https?:\/\//, '')} ↗
+                  {env.url.replace(/^https?:\/\//, '')}
+                  <ExternalLink size={12} strokeWidth={1.75} aria-hidden="true" />
                 </a>
               )}
             </div>
@@ -210,7 +224,7 @@ export function AppDetailPage() {
                   key: 'state',
                   label: 'State',
                   get: (c) => c.state,
-                  render: (c) => <Led state={containerLed(c.state)} label={c.state} />,
+                  render: (c) => <StatusDot state={containerStatus(c.state)} label={c.state} />,
                 },
                 { key: 'cpu', label: 'CPU', get: (c) => c.cpuPct, render: (c) => fmtPct(c.cpuPct), align: 'right', mono: true },
                 { key: 'mem', label: 'Memory', get: (c) => c.memBytes, render: (c) => fmtBytes(c.memBytes), align: 'right', mono: true },
@@ -227,7 +241,7 @@ export function AppDetailPage() {
             <ul className="feed">
               {[...app.deployHistory].reverse().map((d, i) => (
                 <li key={`${d.ts}-${i}`}>
-                  <Led state={eventLed(d.event)} />
+                  <StatusDot state={eventStatus(d.event)} />
                   <span className="feed-time">
                     <RelTime ts={d.ts} />
                   </span>

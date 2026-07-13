@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { useApps, useDashboardLayout, useSaveLayout } from '../api/hooks'
 import { AddWidgetDialog } from '../grid/AddWidgetDialog'
 import { DashboardGrid, type DashboardGridHandle } from '../grid/DashboardGrid'
@@ -69,8 +70,9 @@ export function DashboardPage() {
       </header>
       {chrome.editing && (
         <div className="dash-toolbar">
-          <button type="button" className="btn" onClick={() => setAdding(true)}>
-            + Add widget
+          <button type="button" className="btn btn-sm" onClick={() => setAdding(true)}>
+            <Plus size={14} strokeWidth={1.75} aria-hidden="true" />
+            Add widget
           </button>
           <span className="dash-hint">drag by the handle · resize from the corner</span>
         </div>

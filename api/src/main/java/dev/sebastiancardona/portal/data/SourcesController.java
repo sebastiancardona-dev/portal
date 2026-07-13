@@ -66,12 +66,12 @@ public class SourcesController {
         }
         for (String metric : series.hostMetrics()) {
             sources.add(new SourceView("host:" + metric, "gauge",
-                    "host " + metric, unitFor(metric), null));
+                    "Host " + labelFor(metric), unitFor(metric), null));
         }
         series.latestContainerMetrics().forEach((name, metrics) ->
                 metrics.keySet().forEach(metric ->
                         sources.add(new SourceView("container:" + name + ":" + metric, "gauge",
-                                name + " " + metric, unitFor(metric), null))));
+                                name + " " + labelFor(metric), unitFor(metric), null))));
         return sources;
     }
 
@@ -120,6 +120,19 @@ public class SourcesController {
     private static SourceId parse(String id) {
         return SourceId.parse(id)
                 .orElseThrow(() -> new NotFoundException("unknown source " + id));
+    }
+
+    /** Raw metric names are storage keys — never show them to a person. */
+    static String labelFor(String metric) {
+        return switch (metric) {
+            case "cpu_pct" -> "CPU";
+            case "mem_bytes" -> "memory";
+            case "mem_used_bytes" -> "memory used";
+            case "mem_total_bytes" -> "memory total";
+            case "disk_used_bytes" -> "disk used";
+            case "disk_total_bytes" -> "disk total";
+            default -> metric.replace('_', ' ');
+        };
     }
 
     static String unitFor(String metric) {

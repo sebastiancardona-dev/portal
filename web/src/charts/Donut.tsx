@@ -45,7 +45,7 @@ export function Donut({
     kept.push({
       label: `Other (${rest.length})`,
       value: rest.reduce((sum, p) => sum + p.value, 0),
-      color: 'var(--led-off)',
+      color: 'var(--border-strong)',
       other: true,
     })
     return kept
@@ -57,7 +57,8 @@ export function Donut({
   const total = folded.reduce((sum, p) => sum + p.value, 0)
 
   const legendW = Math.min(200, Math.max(110, width - height - 12))
-  const d = Math.max(Math.min(height - 6, width - legendW - 16), 64)
+  // cap the ring so the legend always keeps room for its labels
+  const d = Math.max(Math.min(height - 6, width - legendW - 16, 160), 64)
   const R = d / 2
   const stroke = Math.max(8, R * 0.32) // hole ≥ 60% of the outer diameter
   const rMid = R - stroke / 2

@@ -53,7 +53,9 @@ export const deployFeedDef: WidgetDef = {
   description: 'Every deploy event across the ecosystem, newest first — what shipped, where, and when.',
   category: 'events',
   Preview: DeployFeedPreview,
-  configSchema: [],
+  configSchema: [
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
+  ],
   defaultSize: { w: 4, h: 3 },
   minSize: { w: 3, h: 2 },
   component: DeployFeedWidget,

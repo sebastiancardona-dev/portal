@@ -49,12 +49,17 @@ function LineChartWidget({ config, width, height }: WidgetProps) {
     series.push({ label: metas[i]?.label ?? id, points: q.data, slot: i + 1 })
   })
 
-  const titleH = 22
+  // a user title lives in the widget header; only untitled charts introduce
+  // their subject here
+  const showTitle = !config.label
+  const titleH = showTitle ? 22 : 0
   return (
     <div className="chart-widget">
-      <span className="stat-label">
-        {series.length === 1 ? (metas[0]?.label ?? ids[0]) : 'comparison'} · {range}
-      </span>
+      {showTitle && (
+        <span className="stat-label">
+          {series.length === 1 ? (metas[0]?.label ?? ids[0]) : 'comparison'} · {range}
+        </span>
+      )}
       <TimeSeriesChart
         series={series}
         width={width}
@@ -73,6 +78,7 @@ export const lineChartDef: WidgetDef = {
   category: 'metrics',
   Preview: LineChartPreview,
   configSchema: [
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
     { key: 'source', label: 'Source', type: 'source', sourceKind: 'gauge', required: true },
     {
       key: 'source2',

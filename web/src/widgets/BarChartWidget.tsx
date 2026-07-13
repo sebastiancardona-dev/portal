@@ -98,6 +98,7 @@ export const barChartDef: WidgetDef = {
   category: 'metrics',
   Preview: BarChartPreview,
   configSchema: [
+    { key: 'label', label: 'Title', type: 'text', hint: 'shown in the widget header' },
     {
       key: 'dataset',
       label: 'Dataset',

@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
+import { GripVertical, X } from 'lucide-react'
 import { ErrorBoundary, Quiet } from '../ui'
 import { getWidgetDef, type WidgetConfig } from './registry'
 
@@ -36,9 +37,10 @@ export function WidgetFrame({
     return () => observer.disconnect()
   }, [])
 
-  // the frame eyebrow names the instrument TYPE; widgets name their subject
-  // (source, app…) themselves, so a config label never reads twice
-  const title = def?.label ?? type
+  // the eyebrow prefers the user's own title; the widget type is the fallback.
+  // Widgets that print a subject internally suppress it when config.label is
+  // set, so a label never reads twice.
+  const title = (typeof config.label === 'string' && config.label) || def?.label || type
 
   return (
     <div className={`widget-card${editing ? ' editing' : ''}`}>
@@ -46,7 +48,7 @@ export function WidgetFrame({
         {editing ? (
           <span className="widget-drag" title="Drag to move">
             <span className="widget-grip" aria-hidden="true">
-              ⠿
+              <GripVertical size={14} strokeWidth={1.75} />
             </span>
             <span className="widget-eyebrow">{title}</span>
           </span>
@@ -55,7 +57,7 @@ export function WidgetFrame({
         )}
         {editing && (
           <button type="button" className="widget-remove" onClick={onRemove} aria-label="Remove widget">
-            ✕
+            <X size={14} strokeWidth={1.75} aria-hidden="true" />
           </button>
         )}
       </div>

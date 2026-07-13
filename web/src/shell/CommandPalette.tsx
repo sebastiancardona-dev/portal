@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowDown, ArrowUp, CornerDownLeft } from 'lucide-react'
 import { useApps, useSources } from '../api/hooks'
-import { appLedState, Led, type LedState } from '../ui'
+import { appStatusState, StatusDot, type StatusState } from '../ui'
 
 interface PaletteItem {
   key: string
@@ -9,7 +10,7 @@ interface PaletteItem {
   label: string
   /** mono detail on the right (version, source id, route) */
   hint?: string
-  led?: LedState
+  status?: StatusState
   to: string
 }
 
@@ -56,7 +57,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           group: 'apps' as const,
           label: app.displayName || app.app,
           hint: prod?.version || app.app,
-          led: appLedState(app.environments),
+          status: appStatusState(app.environments),
           to: `/apps/${app.app}`,
         }
       }) ?? []
@@ -152,8 +153,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
                   onMouseMove={() => setActive(i)}
                   onClick={() => go(item)}
                 >
-                  {item.led != null ? (
-                    <Led state={item.led} />
+                  {item.status != null ? (
+                    <StatusDot state={item.status} />
                   ) : (
                     <span className="palette-bullet" aria-hidden="true" />
                   )}
@@ -166,14 +167,22 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         </div>
         <div className="palette-foot">
           <span>
-            <kbd>↑</kbd>
-            <kbd>↓</kbd> navigate
+            <kbd aria-label="Arrow up">
+              <ArrowUp size={11} strokeWidth={2} aria-hidden="true" />
+            </kbd>
+            <kbd aria-label="Arrow down">
+              <ArrowDown size={11} strokeWidth={2} aria-hidden="true" />
+            </kbd>{' '}
+            navigate
           </span>
           <span>
-            <kbd>↵</kbd> open
+            <kbd aria-label="Enter">
+              <CornerDownLeft size={11} strokeWidth={2} aria-hidden="true" />
+            </kbd>{' '}
+            open
           </span>
           <span>
-            <kbd>esc</kbd> close
+            <kbd>Esc</kbd> close
           </span>
         </div>
       </div>

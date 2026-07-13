@@ -91,7 +91,10 @@ export function TimeSeriesChart({
     : 0
 
   const legendH = legendOn ? 22 : 0
-  const pad = { top: 8, right: 10 + labelGutter, bottom: 18, left: 46 }
+  // left gutter sized to the widest tick label (11px mono ≈ 6.6px/char) so
+  // values like "1000 ms" or "1.9 GiB" are never clipped
+  const maxTickChars = Math.max(...model.ticks.map((v) => fmtValue(v, unit).length), 1)
+  const pad = { top: 8, right: 10 + labelGutter, bottom: 18, left: Math.min(78, 12 + maxTickChars * 6.6) }
   const plotW = Math.max(width - pad.left - pad.right, 10)
   const plotH = Math.max(height - legendH - pad.top - pad.bottom, 10)
   const baseline = pad.top + plotH
@@ -223,7 +226,7 @@ export function TimeSeriesChart({
                 y2={y(v)}
                 className={v === 0 ? 'chart-baseline' : 'chart-grid'}
               />
-              <text x={pad.left - 6} y={y(v) + 3} className="chart-tick" textAnchor="end">
+              <text x={pad.left - 6} y={y(v) + 3} className="chart-tick" fill="var(--text-2)" textAnchor="end">
                 {fmtValue(v, unit)}
               </text>
             </g>
@@ -234,6 +237,7 @@ export function TimeSeriesChart({
               x={x(t)}
               y={baseline + 13}
               className="chart-tick"
+              fill="var(--text-2)"
               textAnchor={i === 0 ? 'start' : i === xTicks.length - 1 ? 'end' : 'middle'}
             >
               {fmtTimeTick(t, span)}
@@ -241,7 +245,7 @@ export function TimeSeriesChart({
           ))}
 
           {kind === 'area' &&
-            linePaths.map((s, i) => <path key={`a${i}`} d={s.area} fill={s.color} opacity={0.1} stroke="none" />)}
+            linePaths.map((s, i) => <path key={`a${i}`} d={s.area} fill={s.color} opacity={0.12} stroke="none" />)}
           {kind !== 'bar' &&
             linePaths.map((s, i) => (
               <path
@@ -260,7 +264,7 @@ export function TimeSeriesChart({
           {endLabels.map((l) => (
             <g key={l.label}>
               <rect x={l.x + 6} y={l.y - 4} width={7} height={7} rx={1.5} fill={l.color} />
-              <text x={l.x + 17} y={l.y + 3} className="chart-direct-label">
+              <text x={l.x + 17} y={l.y + 3} className="chart-direct-label" fill="var(--text)">
                 {l.label}
               </text>
             </g>

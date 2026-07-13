@@ -11,10 +11,10 @@ import { fmtPct } from '../format'
 type CellState = 'ok' | 'warn' | 'down' | 'none'
 
 const WASH: Record<CellState, string> = {
-  ok: 'color-mix(in srgb, var(--ok) 35%, transparent)',
-  warn: 'color-mix(in srgb, var(--warn) 45%, transparent)',
-  down: 'color-mix(in srgb, var(--down) 60%, transparent)',
-  none: 'color-mix(in srgb, var(--led-off) 20%, transparent)',
+  ok: 'color-mix(in srgb, var(--ok) 45%, transparent)',
+  warn: 'color-mix(in srgb, var(--warn) 55%, transparent)',
+  down: 'color-mix(in srgb, var(--down) 65%, transparent)',
+  none: 'var(--border)',
 }
 
 function stateOf(value: number | null): CellState {

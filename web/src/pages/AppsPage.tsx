@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useApps } from '../api/hooks'
 import type { AppSummary } from '../api/types'
 import { fmtMs } from '../format'
-import { appLedState, EnvBadge, Led, Quiet, RelTime, Skeleton, StatusPill } from '../ui'
+import { appStatusState, EnvBadge, Quiet, RelTime, Skeleton, StatusDot, StatusPill } from '../ui'
 
 export function AppIcon({ app }: { app: Pick<AppSummary, 'icon' | 'displayName' | 'app'> }) {
   if (app.icon && /^https?:\/\//.test(app.icon)) {
@@ -74,7 +74,7 @@ export function AppsPage() {
             return (
               <Link key={app.app} to={`/apps/${app.app}`} className="app-card">
                 <div className="app-card-head">
-                  <Led state={appLedState(app.environments)} />
+                  <StatusDot state={appStatusState(app.environments)} />
                   <span className="app-card-name">{app.displayName || app.app}</span>
                   <span className="app-card-meta">
                     {app.containers.length} ctr{app.containers.length === 1 ? '' : 's'}
