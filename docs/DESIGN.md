@@ -102,22 +102,41 @@ dashboard fed by 05's admin API. No self-registration ever in the portal.
 
 ## Frontend architecture
 
+Design system (accepted 2026-07-13 after two rejected rounds — see plan/06 design
+history): **dark-only OLED slate** from the ui-ux-pro-max skill. Page `#0F172A`, cards
+`#1E293B` with always-visible `#334155` borders, ink `#F8FAFC/#94A3B8/#64748B`
+(contrast law: ≥4.5:1, `--text-3` only for ≤12px auxiliary), green `#22C55E` as the
+single interaction accent, Inter for UI + JetBrains Mono for data, lucide-react icons.
+Chart series = the validated colorblind-safe 8-slot set; status colors reserved and
+never color-alone. Hard rule from round 2's failure: **every SVG `<text>` carries an
+explicit `fill`** (default black is invisible on dark), and no UI change ships without
+reading rendered screenshots (`web/scripts/shots.mjs` + `accept.mjs`).
+
 ```
 web/src
 ├── api/          client.ts (same-origin fetch), hooks.ts (react-query, 30s refetchInterval), types.ts
 ├── auth/         login page + token-in-memory context (MoneyTrckr pattern)
-├── widgets/      SDK: registry.ts — widget = {type, label, configSchema, defaultSize,
-│                 minSize, component}. MVP: stat-tile, line-chart, status-list, table
-├── grid/         react-grid-layout wrapper: drag/resize, layout persistence, add/remove
-│                 widget dialog (pick type → pick data source → config form from schema)
-├── pages/        Dashboard (the grid), Apps (per-app page), Host, Login
-├── shell/        nav/layout chrome
-└── theme/        plain CSS, IBM Plex (MoneyTrckr look), light/dark
+├── charts/       SVG primitives (no chart lib): TimeSeriesChart (line|area|bar,
+│                 crosshair+tooltip, legend), Gauge, Donut, HeatStrip, Sparkline
+├── widgets/      SDK: registry.ts — widget = {type, label, description, category,
+│                 Preview, configSchema, defaultSize, minSize, component}. Nine types:
+│                 stat-tile, line-chart, bar-chart, gauge, donut, uptime-heatmap,
+│                 deploy-feed, status-list, table. All take an optional Title
+│                 (config.label → widget header; internal subject suppressed when set)
+├── grid/         gridstack wrapper: drag/resize, layout persistence; AddWidgetDialog =
+│                 two-step gallery (preview vignettes by category → schema-generated
+│                 config form + live preview on real data)
+├── pages/        Dashboard (the grid), Apps, AppDetail, Host, Settings (registry
+│                 overrides editor), Login
+├── shell/        sidebar (OBSERVE / APPS w/ live status dots / MODULES 07-08-05
+│                 "soon" slots / CONFIGURE), topbar (Pulse strip = live host-CPU
+│                 sparkline + N/N UP lamp, Ctrl+K command palette, edit-layout)
+└── theme/        tokens.css — the single token source (dark-only)
 ```
 
-Charts: lightweight SVG line chart (no heavy chart lib; dataviz-skill styling).
-Default layout (served when a user has none): host CPU + RAM stat tiles, host CPU line
-chart 6h, app status list, deploys table, per-container RAM table.
+Default layout (served when a user has none): host CPU/memory/latency stat tiles +
+CPU gauge, host CPU area chart 6h + app status list, container-memory donut +
+deploy feed + containers table.
 
 ## Prod stack (deploy via pipeline 03)
 
