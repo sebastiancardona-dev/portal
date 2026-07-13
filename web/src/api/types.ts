@@ -75,6 +75,14 @@ export interface DeployEvent {
   event: string
 }
 
+/** One line of the cross-app deploy feed (GET /api/deploys, newest first). */
+export interface DeployEventGlobal {
+  ts: string
+  app: string
+  env: string
+  event: string
+}
+
 export interface AppDetail extends AppSummary {
   uptime7d: UptimeCell[]
   deployHistory: DeployEvent[]
@@ -94,7 +102,26 @@ export interface HostSnapshot {
   memTotalBytes: number | null
   diskUsedBytes: number | null
   diskTotalBytes: number | null
+  /** the filesystem path the disk numbers are sampled at — null when no disk data */
+  diskPath: string | null
   containers: HostContainer[]
+}
+
+/** Registry override (GET/PUT /api/registry) — display tweaks over discovery. */
+export interface RegistryOverride {
+  app: string
+  displayName: string | null
+  icon: string | null
+  visible: boolean
+  healthPath: string | null
+}
+
+/** PUT body — omitted/blank fields fall back to the discovered values. */
+export interface RegistryOverrideInput {
+  displayName?: string | null
+  icon?: string | null
+  visible?: boolean
+  healthPath?: string | null
 }
 
 export interface LayoutWidget {

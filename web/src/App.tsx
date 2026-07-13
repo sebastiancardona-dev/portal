@@ -5,6 +5,7 @@ import { AppDetailPage } from './pages/AppDetailPage'
 import { AppsPage } from './pages/AppsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { HostPage } from './pages/HostPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { AppShell } from './shell/AppShell'
 
 function RequireAuth() {
@@ -25,6 +26,7 @@ export function App() {
         <Route path="/apps" element={<AppsPage />} />
         <Route path="/apps/:app" element={<AppDetailPage />} />
         <Route path="/host" element={<HostPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

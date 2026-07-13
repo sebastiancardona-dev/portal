@@ -1,0 +1,590 @@
+/*
+ * Widget + chart layer styles — instrument-panel direction.
+ * Owned by src/widgets (imported from widgets/index.ts); tokens only,
+ * raw color never appears except as a color-mix wash of a token.
+ */
+
+/* ============================ chart chrome ============================== */
+
+/* 8px square chip — carries series identity so text can stay in ink tokens */
+.legend-chip {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+  display: inline-block;
+}
+
+.chart-direct-label {
+  font: 400 10px var(--font-mono);
+  fill: var(--ink);
+}
+
+/* ================================ gauge ================================= */
+
+.gauge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.gauge-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.gauge-band {
+  font: 600 10px var(--font-mono);
+  letter-spacing: 0.09em;
+}
+
+.gauge-max {
+  font: 400 10px var(--font-mono);
+  color: var(--muted);
+}
+
+.gauge-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font: 500 var(--eyebrow-size) / 1 var(--font-mono);
+  letter-spacing: var(--eyebrow-track);
+  text-transform: uppercase;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ================================ donut ================================= */
+
+.donut {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.donut-ring {
+  position: relative;
+  flex: none;
+}
+
+.donut-center {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.donut-total {
+  font: 600 16px/1.1 var(--font-mono);
+  color: var(--ink);
+}
+
+.donut-total-label {
+  font: 500 9px var(--font-mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.donut-legend {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+  max-height: 100%;
+  align-self: center;
+}
+
+.donut-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  min-width: 0;
+}
+
+.donut-legend-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.donut-legend-value {
+  font: 500 11px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.donut-legend-pct {
+  font: 400 10.5px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  min-width: 38px;
+  text-align: right;
+}
+
+.donut-tooltip {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* =============================== heatstrip ============================== */
+
+.heatstrip {
+  position: relative;
+}
+
+.heatstrip-row {
+  position: relative;
+  display: flex;
+  gap: 2px; /* the surface gap does the separating */
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.heatstrip-cell {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 1.5px;
+}
+
+.heatstrip-tooltip {
+  pointer-events: none;
+}
+
+.heatstrip-legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 7px;
+  font: 400 10.5px var(--font-mono);
+  color: var(--muted);
+}
+
+.heatstrip-legend .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ============================ widget frame ============================== */
+
+.widget-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px 5px 12px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+  min-height: 26px;
+}
+
+.widget-eyebrow {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 500 var(--eyebrow-size) / 1 var(--font-mono);
+  letter-spacing: var(--eyebrow-track);
+  text-transform: uppercase;
+  color: var(--muted);
+  user-select: none;
+}
+
+.widget-grip {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  flex: none;
+}
+
+.widget-head .widget-drag {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: grab;
+}
+
+.widget-head .widget-drag:active {
+  cursor: grabbing;
+}
+
+.widget-head.editing {
+  border-bottom-style: dashed;
+  border-bottom-color: var(--line-strong);
+  background: var(--surface-2);
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* edit-mode affordances: dashed accent outline on hover, accent eyebrow */
+.widget-card.editing:hover {
+  outline: 1.5px dashed var(--accent);
+  outline-offset: -1.5px;
+}
+
+.widget-card.editing:hover .widget-eyebrow {
+  color: var(--accent);
+}
+
+/* ============================== stat tile =============================== */
+
+.stat-delta {
+  font: 400 11px var(--font-mono);
+  color: var(--muted);
+}
+
+/* good/bad is ambiguous for host metrics — the figure stays in neutral ink */
+.stat-delta-figure {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* =============================== rack LED =============================== */
+
+.led {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 10px var(--font-mono);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  min-width: 46px;
+}
+
+.led-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.led-ok {
+  color: var(--ok);
+}
+
+.led-ok .led-dot {
+  background: var(--ok);
+  box-shadow: var(--led-glow-ok);
+}
+
+.led-warn {
+  color: var(--warn);
+}
+
+.led-warn .led-dot {
+  background: var(--warn);
+  box-shadow: var(--led-glow-warn);
+}
+
+.led-down {
+  color: var(--down);
+}
+
+.led-down .led-dot {
+  background: var(--down);
+  box-shadow: var(--led-glow-down);
+}
+
+.led-off {
+  color: var(--muted);
+}
+
+.led-off .led-dot {
+  background: var(--led-off);
+  box-shadow: none;
+}
+
+/* ============================== status list ============================= */
+
+.status-list .status-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+}
+
+.status-list .status-row:hover {
+  text-decoration: none;
+  background: var(--surface-2);
+}
+
+.status-list .status-row:last-child {
+  border-bottom: none;
+}
+
+/* ============================== deploy feed ============================= */
+
+.deploy-feed {
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.deploy-feed-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 2px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+  min-width: 0;
+}
+
+.deploy-feed-row:last-child {
+  border-bottom: none;
+}
+
+.deploy-feed-app {
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.deploy-feed-event {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.deploy-feed-when {
+  flex: none;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================ table ================================= */
+
+.table-widget {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-widget .data-table {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================ gallery preview =========================== */
+
+.widget-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 3;
+  background: var(--chart-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+/* ========================== add-widget dialog =========================== */
+
+.awd-dialog {
+  width: min(780px, 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.awd-category {
+  margin: 4px 0 8px;
+}
+
+.awd-category + .awd-category {
+  margin-top: 16px;
+}
+
+.awd-category-label {
+  display: block;
+  font: 500 var(--eyebrow-size) / 1 var(--font-mono);
+  letter-spacing: var(--eyebrow-track);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.awd-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.awd-card {
+  appearance: none;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--ink);
+  font-family: var(--font-ui);
+}
+
+.awd-card:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+}
+
+.awd-card.selected {
+  border-color: var(--accent);
+  outline: 1.5px solid var(--accent);
+  outline-offset: -0.5px;
+  background: var(--accent-wash);
+}
+
+.awd-card-name {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.awd-card-desc {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.awd-configure {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.awd-preview-pane {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.awd-preview-stage {
+  height: 260px;
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.awd-preview-stage .widget-card {
+  flex: 1;
+  min-height: 0;
+}
+
+.awd-preview-hint {
+  font: 400 10.5px var(--font-mono);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 700px) {
+  .awd-configure {
+    grid-template-columns: 1fr;
+  }
+
+  .awd-preview-pane {
+    position: static;
+  }
+}
+
+/* ============================ empty dashboard =========================== */
+
+.grid-empty-panel {
+  margin: 8px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: 36px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.grid-empty-eyebrow {
+  font: 500 var(--eyebrow-size) / 1 var(--font-mono);
+  letter-spacing: var(--eyebrow-track);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.grid-empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.grid-empty-hint {
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 420px;
+  margin: 0;
+}
+
+.grid-empty-strip {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 110px));
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 640px;
+}
+
+.grid-empty-strip .widget-preview {
+  opacity: 0.85;
+}

@@ -24,23 +24,32 @@ import java.util.UUID;
 public class DashboardController {
 
     /**
-     * Served when a user has no saved layout: host CPU + RAM stat tiles, host CPU
-     * line chart (6h), app status list, per-container memory table (DESIGN.md).
+     * Served when a user has no saved layout — the control-room default.
+     * Row 1: host CPU / memory / prod latency stat tiles + a CPU gauge.
+     * Row 2: host CPU area chart (6h) + the app status list.
+     * Row 3: container-memory donut + cross-app deploy feed + container table.
+     * Config keys match the widget registry (widgets/) exactly.
      */
     static final String DEFAULT_LAYOUT = """
             {"widgets":[
               {"id":"host-cpu-tile","type":"stat-tile","x":0,"y":0,"w":3,"h":2,
-               "config":{"source":"host:cpu_pct","label":"Host CPU","unit":"%"}},
-              {"id":"host-ram-tile","type":"stat-tile","x":3,"y":0,"w":3,"h":2,
-               "config":{"source":"host:mem_used_bytes","totalSource":"host:mem_total_bytes",
-                         "label":"Host RAM","unit":"bytes"}},
-              {"id":"host-cpu-chart","type":"line-chart","x":6,"y":0,"w":6,"h":4,
-               "config":{"source":"host:cpu_pct","range":"6h","bucket":"5m",
-                         "label":"Host CPU — 6h","unit":"%"}},
-              {"id":"app-status","type":"status-list","x":0,"y":2,"w":6,"h":4,
-               "config":{"label":"Apps"}},
-              {"id":"container-mem","type":"table","x":6,"y":4,"w":6,"h":4,
-               "config":{"metric":"mem_bytes","label":"Container memory"}}
+               "config":{"source":"host:cpu_pct","label":"Host CPU","sparkline":"on"}},
+              {"id":"host-mem-tile","type":"stat-tile","x":3,"y":0,"w":3,"h":2,
+               "config":{"source":"host:mem_used_bytes","label":"Host memory","sparkline":"off"}},
+              {"id":"latency-tile","type":"stat-tile","x":6,"y":0,"w":3,"h":2,
+               "config":{"source":"latency:moneytrckr:prod","label":"MoneyTrckr latency","sparkline":"off"}},
+              {"id":"host-cpu-gauge","type":"gauge","x":9,"y":0,"w":3,"h":2,
+               "config":{"source":"host:cpu_pct","warn":"80","critical":"92"}},
+              {"id":"host-cpu-chart","type":"line-chart","x":0,"y":2,"w":6,"h":4,
+               "config":{"source":"host:cpu_pct","kind":"area","range":"6h","bucket":"5m"}},
+              {"id":"app-status","type":"status-list","x":6,"y":2,"w":6,"h":4,
+               "config":{}},
+              {"id":"container-mem-donut","type":"donut","x":0,"y":6,"w":4,"h":4,
+               "config":{"dataset":"container-memory"}},
+              {"id":"deploy-feed","type":"deploy-feed","x":4,"y":6,"w":4,"h":4,
+               "config":{}},
+              {"id":"container-table","type":"table","x":8,"y":6,"w":4,"h":4,
+               "config":{"dataset":"containers"}}
             ]}""";
 
     private final DashboardLayoutRepository layouts;

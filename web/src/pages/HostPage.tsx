@@ -1,8 +1,8 @@
 import { useHost, useSeries } from '../api/hooks'
 import type { Point } from '../api/types'
+import { Donut, Gauge, TimeSeriesChart } from '../charts'
 import { fmtBytes, fmtPct } from '../format'
 import { Quiet, RelTime, Skeleton, SortTable, useMeasure } from '../ui'
-import { SeriesChart } from '../widgets/SeriesChart'
 
 function meterClass(pct: number): string {
   if (pct >= 92) return 'meter-crit'
@@ -10,35 +10,78 @@ function meterClass(pct: number): string {
   return 'meter-ok'
 }
 
-function HostTile({
+function MeterTile({
   label,
   value,
   used,
   total,
+  footnote,
+  footnoteTitle,
 }: {
   label: string
   value: string
   used?: number | null
   total?: number | null
+  footnote?: string
+  footnoteTitle?: string
 }) {
   const pct = used != null && total ? (used / total) * 100 : null
   return (
-    <div className="panel stat-tile">
-      <span className="stat-label">{label}</span>
-      <span className="stat-value">{value}</span>
+    <div className="panel metric-tile">
+      <span className="eyebrow">{label}</span>
+      <span className="metric-value">{value}</span>
       {pct != null && (
         <>
           <div className="meter" role="presentation">
             <div className={`meter-fill ${meterClass(pct)}`} style={{ width: `${Math.min(pct, 100)}%` }} />
           </div>
-          <span className="stat-sub mono">{fmtPct(pct)} of {fmtBytes(total!)}</span>
+          <span className="metric-sub">
+            {fmtPct(pct)} of {fmtBytes(total!)}
+          </span>
         </>
+      )}
+      {footnote && (
+        <span className="metric-note" title={footnoteTitle}>
+          {footnote}
+        </span>
       )}
     </div>
   )
 }
 
-function HostChart({ title, unit, query }: { title: string; unit: string; query: { data?: Point[]; isPending: boolean; isError: boolean } }) {
+function CpuGauge({ cpuPct }: { cpuPct: number | null }) {
+  const [ref, size] = useMeasure()
+  return (
+    <div className="panel metric-tile" ref={ref}>
+      <span className="eyebrow">CPU</span>
+      {cpuPct == null ? (
+        <Quiet>no data yet</Quiet>
+      ) : (
+        size.width > 0 && (
+          <Gauge
+            value={cpuPct}
+            max={100}
+            label="CPU"
+            unit="%"
+            width={size.width}
+            height={110}
+            thresholds={{ warn: 80, critical: 92 }}
+          />
+        )
+      )}
+    </div>
+  )
+}
+
+function HostChart({
+  title,
+  unit,
+  query,
+}: {
+  title: string
+  unit: string
+  query: { data?: Point[]; isPending: boolean; isError: boolean }
+}) {
   const [ref, size] = useMeasure()
   return (
     <section className="panel">
@@ -50,7 +93,37 @@ function HostChart({ title, unit, query }: { title: string; unit: string; query:
           <Quiet>no data yet</Quiet>
         ) : (
           size.width > 0 && (
-            <SeriesChart series={[{ label: title, points: query.data }]} width={size.width} height={220} unit={unit} />
+            <TimeSeriesChart
+              series={[{ label: title, points: query.data }]}
+              width={size.width}
+              height={220}
+              unit={unit}
+              kind="area"
+            />
+          )
+        )}
+      </div>
+    </section>
+  )
+}
+
+function MemoryDonut({ containers }: { containers: { name: string; memBytes: number }[] }) {
+  const [ref, size] = useMeasure()
+  return (
+    <section className="panel">
+      <h2 className="panel-title">Memory share</h2>
+      <div ref={ref} className="panel-chart">
+        {containers.length === 0 ? (
+          <Quiet>no per-container stats yet</Quiet>
+        ) : (
+          size.width > 0 && (
+            <Donut
+              parts={containers.map((c) => ({ label: c.name, value: c.memBytes }))}
+              width={size.width}
+              height={220}
+              unit="bytes"
+              totalLabel="all containers"
+            />
           )
         )}
       </div>
@@ -66,9 +139,12 @@ export function HostPage() {
   return (
     <>
       <header className="page-head">
-        <h1 className="page-title">Host</h1>
+        <div className="page-id">
+          <span className="eyebrow">Host · VPS</span>
+          <h1 className="page-title">Host</h1>
+        </div>
         {host.data && (
-          <span className="muted">
+          <span className="page-meta">
             snapshot <RelTime ts={host.data.ts} />
           </span>
         )}
@@ -76,26 +152,28 @@ export function HostPage() {
 
       {host.isPending ? (
         <div className="tile-row">
-          <Skeleton height={120} />
-          <Skeleton height={120} />
-          <Skeleton height={120} />
+          <Skeleton height={130} />
+          <Skeleton height={130} />
+          <Skeleton height={130} />
         </div>
       ) : host.isError ? (
         <Quiet>no host metrics yet — the collector may still be warming up</Quiet>
       ) : (
         <div className="tile-row">
-          <HostTile label="CPU" value={fmtPct(host.data.cpuPct)} />
-          <HostTile
+          <CpuGauge cpuPct={host.data.cpuPct} />
+          <MeterTile
             label="Memory"
             value={fmtBytes(host.data.memUsedBytes)}
             used={host.data.memUsedBytes}
             total={host.data.memTotalBytes}
           />
-          <HostTile
+          <MeterTile
             label="Disk"
             value={fmtBytes(host.data.diskUsedBytes)}
             used={host.data.diskUsedBytes}
             total={host.data.diskTotalBytes}
+            footnote={host.data.diskPath ? `measuring: ${host.data.diskPath}` : undefined}
+            footnoteTitle="usage of the filesystem containing this path — on the VPS this is the root disk"
           />
         </div>
       )}
@@ -105,25 +183,28 @@ export function HostPage() {
         <HostChart title="Memory used · 6h" unit="bytes" query={memSeries} />
       </div>
 
-      <section className="panel">
-        <h2 className="panel-title">Containers</h2>
-        {host.isPending ? (
-          <Skeleton height={120} />
-        ) : host.isError || host.data.containers.length === 0 ? (
-          <Quiet>no per-container stats yet</Quiet>
-        ) : (
-          <SortTable
-            rows={host.data.containers}
-            rowKey={(c) => c.name}
-            defaultSort={{ key: 'mem', dir: 'desc' }}
-            columns={[
-              { key: 'name', label: 'Container', get: (c) => c.name, mono: true },
-              { key: 'cpu', label: 'CPU', get: (c) => c.cpuPct, render: (c) => fmtPct(c.cpuPct), align: 'right', mono: true },
-              { key: 'mem', label: 'Memory', get: (c) => c.memBytes, render: (c) => fmtBytes(c.memBytes), align: 'right', mono: true },
-            ]}
-          />
-        )}
-      </section>
+      <div className="panel-row">
+        <MemoryDonut containers={(host.data?.containers ?? []).filter((c) => c.memBytes != null)} />
+        <section className="panel">
+          <h2 className="panel-title">Containers</h2>
+          {host.isPending ? (
+            <Skeleton height={120} />
+          ) : host.isError || host.data.containers.length === 0 ? (
+            <Quiet>no per-container stats yet</Quiet>
+          ) : (
+            <SortTable
+              rows={host.data.containers}
+              rowKey={(c) => c.name}
+              defaultSort={{ key: 'mem', dir: 'desc' }}
+              columns={[
+                { key: 'name', label: 'Container', get: (c) => c.name, mono: true },
+                { key: 'cpu', label: 'CPU', get: (c) => c.cpuPct, render: (c) => fmtPct(c.cpuPct), align: 'right', mono: true },
+                { key: 'mem', label: 'Memory', get: (c) => c.memBytes, render: (c) => fmtBytes(c.memBytes), align: 'right', mono: true },
+              ]}
+            />
+          )}
+        </section>
+      </div>
     </>
   )
 }

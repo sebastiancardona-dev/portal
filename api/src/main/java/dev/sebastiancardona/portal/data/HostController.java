@@ -1,5 +1,6 @@
 package dev.sebastiancardona.portal.data;
 
+import dev.sebastiancardona.portal.config.PortalProps;
 import dev.sebastiancardona.portal.metrics.SeriesService;
 import dev.sebastiancardona.portal.metrics.SeriesService.Point;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,22 +14,26 @@ import java.util.Map;
 /**
  * Latest host snapshot with per-container breakdown. Fields are null (and the
  * container list empty) until the collectors have data — e.g. on a dev machine.
+ * {@code diskPath} names the filesystem path the disk numbers were sampled at,
+ * so the UI can say WHAT is being measured (null while no disk data exists).
  */
 @RestController
 @RequestMapping("/api/host")
 public class HostController {
 
     private final SeriesService series;
+    private final PortalProps props;
 
-    public HostController(SeriesService series) {
+    public HostController(SeriesService series, PortalProps props) {
         this.series = series;
+        this.props = props;
     }
 
     public record ContainerStatDto(String name, Double cpuPct, Long memBytes) {
     }
 
     public record HostDto(Instant ts, Double cpuPct, Long memUsedBytes, Long memTotalBytes,
-                          Long diskUsedBytes, Long diskTotalBytes,
+                          Long diskUsedBytes, Long diskTotalBytes, String diskPath,
                           List<ContainerStatDto> containers) {
     }
 
@@ -45,12 +50,15 @@ public class HostController {
                             mem == null ? null : (long) mem.value());
                 })
                 .toList();
+        Long diskUsed = longOf(host.get("disk_used_bytes"));
+        Long diskTotal = longOf(host.get("disk_total_bytes"));
         return new HostDto(ts,
                 doubleOf(host.get("cpu_pct")),
                 longOf(host.get("mem_used_bytes")),
                 longOf(host.get("mem_total_bytes")),
-                longOf(host.get("disk_used_bytes")),
-                longOf(host.get("disk_total_bytes")),
+                diskUsed,
+                diskTotal,
+                diskUsed == null && diskTotal == null ? null : props.host().diskPath(),
                 containers);
     }
 

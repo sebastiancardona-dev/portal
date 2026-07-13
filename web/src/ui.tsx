@@ -20,23 +20,38 @@ export function useMeasure(): [RefObject<HTMLDivElement | null>, { width: number
   return [ref, size]
 }
 
-/** UP/DOWN pill — status color never carries meaning alone, the label does.
- *  null = never probed yet (an env without a discovered URL): neutral pill. */
-export function StatusPill({ up }: { up: boolean | null }) {
-  if (up == null) {
-    return (
-      <span className="pill pill-unknown">
-        <span className="pill-dot" aria-hidden="true" />
-        N/A
-      </span>
-    )
-  }
+export type LedState = 'ok' | 'warn' | 'serious' | 'down' | 'off'
+
+/** Rack LED — 7px dot with a glow + label. Color NEVER carries meaning alone. */
+export function Led({
+  state,
+  label,
+  title,
+}: {
+  state: LedState
+  label?: string
+  title?: string
+}) {
   return (
-    <span className={`pill ${up ? 'pill-up' : 'pill-down'}`}>
-      <span className="pill-dot" aria-hidden="true" />
-      {up ? 'UP' : 'DOWN'}
+    <span className={`led led-${state}`} title={title}>
+      <span className="led-dot" aria-hidden="true" />
+      {label != null && <span className="led-label">{label}</span>}
     </span>
   )
+}
+
+/** Aggregate LED for an app: any env down → down; all up → ok; unknown → off. */
+export function appLedState(envs: { up: boolean | null }[]): LedState {
+  if (envs.some((e) => e.up === false)) return 'down'
+  if (envs.length > 0 && envs.every((e) => e.up === true)) return 'ok'
+  return 'off'
+}
+
+/** UP/DOWN status as a rack LED — the label does the talking, not the color.
+ *  null = never probed yet (an env without a discovered URL): dark LED. */
+export function StatusPill({ up }: { up: boolean | null }) {
+  if (up == null) return <Led state="off" label="N/A" />
+  return up ? <Led state="ok" label="UP" /> : <Led state="down" label="DOWN" />
 }
 
 export function EnvBadge({ env }: { env: string }) {

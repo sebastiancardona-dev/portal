@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { useDashboardLayout, useSaveLayout } from '../api/hooks'
+import { useApps, useDashboardLayout, useSaveLayout } from '../api/hooks'
 import { AddWidgetDialog } from '../grid/AddWidgetDialog'
 import { DashboardGrid, type DashboardGridHandle } from '../grid/DashboardGrid'
 import { useDashboardChrome } from '../shell/DashboardChrome'
-import { Quiet, Skeleton } from '../ui'
+import { Quiet, RelTime, Skeleton } from '../ui'
 import type { WidgetConfig } from '../widgets/registry'
 
 export function DashboardPage() {
   const layout = useDashboardLayout()
+  const apps = useApps() // its 30s poll doubles as the page's refresh heartbeat
   const save = useSaveLayout()
   const chrome = useDashboardChrome()
   const grid = useRef<DashboardGridHandle>(null)
@@ -53,8 +54,19 @@ export function DashboardPage() {
   }
   if (layout.isError) return <Quiet>could not load your dashboard layout</Quiet>
 
+  const refreshedAt = apps.dataUpdatedAt > 0 ? new Date(apps.dataUpdatedAt).toISOString() : null
+
   return (
     <>
+      <header className="page-head">
+        <div className="page-id">
+          <span className="eyebrow">Overview</span>
+          <h1 className="page-title">Dashboard</h1>
+        </div>
+        <span className="page-meta">
+          refreshed <RelTime ts={refreshedAt} />
+        </span>
+      </header>
       {chrome.editing && (
         <div className="dash-toolbar">
           <button type="button" className="btn" onClick={() => setAdding(true)}>

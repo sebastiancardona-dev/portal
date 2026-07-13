@@ -1,6 +1,7 @@
 import { useApps, useHost } from '../api/hooks'
 import { fmtBytes, fmtPct } from '../format'
 import { EnvBadge, Quiet, RelTime, Skeleton, SortTable } from '../ui'
+import { TablePreview } from './previews'
 import type { WidgetDef, WidgetProps } from './registry'
 
 function ContainersTable() {
@@ -80,15 +81,23 @@ function DeploysTable() {
 
 function TableWidget({ config }: WidgetProps) {
   const dataset = config.dataset || 'containers'
-  if (dataset === 'deploys') return <DeploysTable />
-  if (dataset === 'containers') return <ContainersTable />
-  return <Quiet>unknown dataset “{dataset}”</Quiet>
+  const body =
+    dataset === 'deploys' ? (
+      <DeploysTable />
+    ) : dataset === 'containers' ? (
+      <ContainersTable />
+    ) : (
+      <Quiet>unknown dataset “{dataset}”</Quiet>
+    )
+  return <div className="table-widget">{body}</div>
 }
 
 export const tableDef: WidgetDef = {
   type: 'table',
   label: 'Table',
   description: 'A sortable table over a picked dataset: per-container resources, or last deploys per app.',
+  category: 'composition',
+  Preview: TablePreview,
   configSchema: [
     {
       key: 'dataset',

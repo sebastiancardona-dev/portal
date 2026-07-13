@@ -3,8 +3,15 @@ import { ApiError } from '../api/client'
 import type { SeriesBucket, SeriesRange } from '../api/types'
 import { SERIES_BUCKETS } from '../api/types'
 import { Quiet, Skeleton } from '../ui'
-import { SeriesChart, type ChartSeries } from './SeriesChart'
+import { TimeSeriesChart, type SeriesDef } from '../charts'
+import { LineChartPreview } from './previews'
 import type { WidgetDef, WidgetProps } from './registry'
+
+/**
+ * 1–3 gauge sources over time, as lines or area washes. Slots are fixed by
+ * field position (source → slot 1, source2 → slot 2, source3 → slot 3) so a
+ * series keeps its color when a sibling is added or removed above it.
+ */
 
 function gone(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404
@@ -13,33 +20,48 @@ function gone(error: unknown): boolean {
 function LineChartWidget({ config, width, height }: WidgetProps) {
   const range = (config.range as SeriesRange) || '6h'
   const bucket = (config.bucket as SeriesBucket) || '5m'
-  const idA = config.sourceA || undefined
-  const idB = config.sourceB || undefined
+  const kind = config.kind === 'area' ? 'area' : 'line'
+  // sourceA/sourceB are the pre-redesign key names — old layouts keep working
+  const ids = [
+    config.source || config.sourceA || undefined,
+    config.source2 || config.sourceB || undefined,
+    config.source3 || undefined,
+  ]
   const sources = useSources()
-  const metaA = sources.data?.find((s) => s.id === idA)
-  const metaB = sources.data?.find((s) => s.id === idB)
-  const qa = useSeries(idA, range, bucket)
-  const qb = useSeries(idB, range, bucket, !!idB)
+  const metas = ids.map((id) => sources.data?.find((s) => s.id === id))
+  const q1 = useSeries(ids[0], range, bucket)
+  const q2 = useSeries(ids[1], range, bucket, !!ids[1])
+  const q3 = useSeries(ids[2], range, bucket, !!ids[2])
+  const queries = [q1, q2, q3]
 
-  if (!idA) return <Quiet>no source configured</Quiet>
-  if ((sources.isSuccess && !metaA) || (qa.isError && gone(qa.error))) {
+  if (!ids[0]) return <Quiet>no source configured</Quiet>
+  if ((sources.isSuccess && !metas[0]) || (q1.isError && gone(q1.error))) {
     return <Quiet>source unavailable</Quiet>
   }
-  if (qa.isPending || (idB && qb.isPending)) return <Skeleton height={Math.max(height - 40, 40)} />
-  if (qa.isError) return <Quiet>no data yet</Quiet>
+  if (queries.some((q, i) => ids[i] && q.isPending)) return <Skeleton height={Math.max(height - 40, 40)} />
+  if (q1.isError) return <Quiet>no data yet</Quiet>
 
-  const series: ChartSeries[] = [{ label: metaA?.label ?? idA, points: qa.data }]
-  if (idB && qb.data && !(sources.isSuccess && !metaB)) {
-    series.push({ label: metaB?.label ?? idB, points: qb.data })
-  }
+  const series: SeriesDef[] = []
+  ids.forEach((id, i) => {
+    const q = queries[i]
+    if (!id || !q.data) return
+    if (i > 0 && sources.isSuccess && !metas[i]) return // vanished secondary source: drop, keep chart
+    series.push({ label: metas[i]?.label ?? id, points: q.data, slot: i + 1 })
+  })
 
   const titleH = 22
   return (
     <div className="chart-widget">
       <span className="stat-label">
-        {series.length === 1 ? (metaA?.label ?? idA) : 'comparison'} · {range}
+        {series.length === 1 ? (metas[0]?.label ?? ids[0]) : 'comparison'} · {range}
       </span>
-      <SeriesChart series={series} width={width} height={Math.max(height - titleH, 40)} unit={metaA?.unit} />
+      <TimeSeriesChart
+        series={series}
+        width={width}
+        height={Math.max(height - titleH, 40)}
+        unit={metas[0]?.unit}
+        kind={kind}
+      />
     </div>
   )
 }
@@ -47,15 +69,34 @@ function LineChartWidget({ config, width, height }: WidgetProps) {
 export const lineChartDef: WidgetDef = {
   type: 'line-chart',
   label: 'Line chart',
-  description: 'Time series of one or two gauge sources — bucketed averages over a chosen range.',
+  description: 'Time series of up to three gauge sources — bucketed averages, as lines or filled areas.',
+  category: 'metrics',
+  Preview: LineChartPreview,
   configSchema: [
-    { key: 'sourceA', label: 'Source', type: 'source', sourceKind: 'gauge', required: true },
+    { key: 'source', label: 'Source', type: 'source', sourceKind: 'gauge', required: true },
     {
-      key: 'sourceB',
+      key: 'source2',
       label: 'Second source',
       type: 'source',
       sourceKind: 'gauge',
       hint: 'optional — same unit reads best (one axis)',
+    },
+    {
+      key: 'source3',
+      label: 'Third source',
+      type: 'source',
+      sourceKind: 'gauge',
+      showIf: (values) => !!(values.source2 || values.sourceB),
+    },
+    {
+      key: 'kind',
+      label: 'Style',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'line', label: 'Line' },
+        { value: 'area', label: 'Area' },
+      ],
     },
     { key: 'range', label: 'Range', type: 'range', required: true },
     {

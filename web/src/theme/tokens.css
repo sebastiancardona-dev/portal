@@ -1,75 +1,129 @@
 /*
- * Portal design tokens — a calm, dense-but-breathing ops surface.
- * Dark is the default (index.html sets data-theme before first paint);
- * light is the override. Chart/status colors follow the validated dataviz
- * reference palette: categorical slots re-stepped per surface, status colors
- * reserved (never used as series colors) and always paired with a label.
+ * Portal design tokens — "instrument panel" direction.
+ *
+ * The portal is the control room of a one-VPS ecosystem: dense, dark-first,
+ * blue-black surfaces like a rack room at night; IBM Plex (the ecosystem face)
+ * with MONO carrying all data, labels-as-eyebrows, and versions; status told
+ * by rack-LEDs (dot + glow + label, never color alone); one signal-indigo
+ * accent reserved strictly for interaction (focus, active nav, primary
+ * actions, edit mode) — it never appears inside a chart.
+ *
+ * Chart colors follow the dataviz method: the 8-slot categorical palette was
+ * validated with scripts/validate_palette.js against BOTH surfaces below
+ * (dark #141821: all pass, CVD floor band → legends + direct labels + 2px
+ * gaps are mandatory; light #fbfbfa: slots 2/3/7 sub-3:1 → relief rule:
+ * visible labels or table view). Status colors are reserved and never
+ * impersonate a series. Sequential ramp = one blue hue for magnitude
+ * (heatmaps); text always wears ink tokens, never series colors.
  */
 
 :root {
   /* type */
   --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* eyebrow: composed as font: 500 var(--eyebrow-size)/1 var(--font-mono);
+     letter-spacing var(--eyebrow-track); uppercase; color var(--muted) */
+  --eyebrow-size: 10px;
+  --eyebrow-track: 0.09em;
 
-  /* dark: the default ops surface */
-  --bg: #0d0e10;
-  --surface: #16181b;
-  --surface-2: #1d2024;
-  --ink: #e8eae6;
-  --muted: #93968f;
-  --line: #26292d;
-  --line-strong: #3a3e43;
+  /* dark: the default control-room surface (blue-tinted, never pure black) */
+  --bg: #0b0e14;
+  --surface: #121722;
+  --surface-2: #19202e;
+  --ink: #e7eaf0;
+  --muted: #8d94a3;
+  --line: #222937;
+  --line-strong: #364052;
 
-  --accent: #3987e5;
-  --accent-ink: #ffffff;
+  /* interaction accent — UI only, never a series, never a status */
+  --accent: #8b9bff;
+  --accent-ink: #0b0e14;
+  --accent-wash: color-mix(in srgb, var(--accent) 12%, transparent);
 
-  /* categorical series (dark steps) */
+  /* categorical series, fixed order (dark steps, validated on #141821) */
   --series-1: #3987e5;
   --series-2: #199e70;
   --series-3: #c98500;
-  --series-4: #9085e9;
+  --series-4: #008300;
+  --series-5: #9085e9;
+  --series-6: #e66767;
+  --series-7: #d55181;
+  --series-8: #d95926;
 
-  /* status — reserved, never impersonates a series */
+  /* sequential ramp (magnitude only: heatmaps, meters) — one hue, light→dark */
+  --seq-1: #cde2fb;
+  --seq-2: #9ec5f4;
+  --seq-3: #6da7ec;
+  --seq-4: #3987e5;
+  --seq-5: #256abf;
+  --seq-6: #184f95;
+  --seq-7: #0d366b;
+
+  /* status — reserved; shipped as LED (dot+glow) + label, never color alone */
   --ok: #0ca30c;
   --warn: #fab219;
+  --serious: #ec835a;
   --down: #d03b3b;
+  --led-glow-ok: 0 0 6px color-mix(in srgb, var(--ok) 70%, transparent);
+  --led-glow-warn: 0 0 6px color-mix(in srgb, var(--warn) 70%, transparent);
+  --led-glow-down: 0 0 6px color-mix(in srgb, var(--down) 70%, transparent);
+  --led-off: #4a5262;
 
-  /* chart chrome */
-  --chart-grid: #26292d;
-  --chart-baseline: #3a3e43;
-  --spark: color-mix(in srgb, var(--accent) 45%, transparent);
+  /* chart chrome (recessive: grid < baseline < ink) */
+  --chart-surface: #141821;
+  --chart-grid: #222937;
+  --chart-baseline: #364052;
+  --spark: color-mix(in srgb, var(--series-1) 45%, transparent);
 
-  --radius: 8px;
-  --radius-sm: 5px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px rgb(0 0 0 / 0.35);
+  /* geometry: instrument, not bubbly */
+  --radius: 6px;
+  --radius-sm: 4px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
+  --pad-panel: 14px 16px;
 }
 
 :root[data-theme='light'] {
-  --bg: #f4f4f2;
-  --surface: #fcfcfb;
-  --surface-2: #efeeeb;
-  --ink: #17181a;
-  --muted: #5c5e58;
-  --line: #e1e0d9;
-  --line-strong: #c3c2b7;
+  --bg: #f3f4f6;
+  --surface: #fbfbfa;
+  --surface-2: #ffffff;
+  --ink: #14161c;
+  --muted: #5b6070;
+  --line: #e2e2dd;
+  --line-strong: #c4c4bc;
 
-  --accent: #2a78d6;
+  --accent: #4353d8;
   --accent-ink: #ffffff;
+  --accent-wash: color-mix(in srgb, var(--accent) 9%, transparent);
 
-  /* categorical series (light steps) */
+  /* categorical series (light steps, validated on #fbfbfa; slots 2/3/7 need
+     the relief rule: visible direct labels or a table view) */
   --series-1: #2a78d6;
   --series-2: #1baf7a;
   --series-3: #eda100;
-  --series-4: #4a3aa7;
+  --series-4: #008300;
+  --series-5: #4a3aa7;
+  --series-6: #e34948;
+  --series-7: #e87ba4;
+  --series-8: #eb6834;
 
-  --ok: #0ca30c;
-  --warn: #c07d00; /* darker warning step for legible text on light */
+  --seq-1: #cde2fb;
+  --seq-2: #9ec5f4;
+  --seq-3: #6da7ec;
+  --seq-4: #3987e5;
+  --seq-5: #256abf;
+  --seq-6: #184f95;
+  --seq-7: #0d366b;
+
+  --ok: #0a8a0a;
+  --warn: #b57500; /* darker step so warning TEXT stays legible on light */
+  --serious: #c25f38;
   --down: #d03b3b;
 
-  --chart-grid: #e1e0d9;
-  --chart-baseline: #c3c2b7;
+  --chart-surface: #fbfbfa;
+  --chart-grid: #e2e2dd;
+  --chart-baseline: #c4c4bc;
 
-  --shadow: 0 1px 2px rgb(23 24 26 / 0.06), 0 8px 24px rgb(23 24 26 / 0.08);
+  --shadow: 0 1px 2px rgb(20 22 28 / 0.06), 0 8px 24px rgb(20 22 28 / 0.08);
 }
 
 * {

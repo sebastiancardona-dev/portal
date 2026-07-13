@@ -53,11 +53,19 @@ class PortalApiIT extends AbstractIT {
         var host = get("/api/host", adminToken());
         assertThat(host.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(host.getBody().get("cpuPct")).isNull();
+        // no disk metrics collected → the measured path is null too (never a lie)
+        assertThat(host.getBody().get("diskPath")).isNull();
         assertThat((List<?>) host.getBody().get("containers")).isEmpty();
 
         var apps = getList("/api/apps", adminToken());
         assertThat(apps.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(apps.getBody()).isEmpty();
+
+        var deploys = getList("/api/deploys", adminToken());
+        assertThat(deploys.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(deploys.getBody()).isEmpty();
+        assertThat(get("/api/deploys", null).getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -69,6 +77,9 @@ class PortalApiIT extends AbstractIT {
         assertThat(initial.getStatusCode()).isEqualTo(HttpStatus.OK);
         var defaultWidgets = (List<Map<String, Object>>) initial.getBody().get("widgets");
         assertThat(defaultWidgets).isNotEmpty(); // the hardcoded default
+        assertThat(defaultWidgets).extracting(w -> w.get("type"))
+                .contains("stat-tile", "gauge", "line-chart", "status-list",
+                        "donut", "deploy-feed", "table");
 
         Map<String, Object> custom = Map.of("widgets", List.of(Map.of(
                 "id", "w1", "type", "stat-tile", "x", 0, "y", 0, "w", 4, "h", 2,

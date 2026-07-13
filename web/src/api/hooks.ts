@@ -5,9 +5,12 @@ import type {
   AppDetail,
   AppSummary,
   DashboardLayout,
+  DeployEventGlobal,
   HostSnapshot,
   Me,
   Point,
+  RegistryOverride,
+  RegistryOverrideInput,
   SeriesBucket,
   SeriesRange,
   Source,
@@ -116,6 +119,58 @@ export function useHost() {
     queryFn: () => api<HostSnapshot>('/api/host'),
     enabled: authed,
     refetchInterval: POLL,
+  })
+}
+
+/** Cross-app deploy feed — the pipeline's last 50 events, newest first. */
+export function useDeploys() {
+  const { authed } = useAuth()
+  return useQuery({
+    queryKey: ['deploys'],
+    queryFn: () => api<DeployEventGlobal[]>('/api/deploys'),
+    enabled: authed,
+    refetchInterval: POLL,
+  })
+}
+
+/* ------------------------------ registry ------------------------------- */
+
+export function useRegistryOverrides() {
+  const { authed } = useAuth()
+  return useQuery({
+    queryKey: ['registry'],
+    queryFn: () => api<RegistryOverride[]>('/api/registry'),
+    enabled: authed,
+    retry: retryUnlessGone,
+  })
+}
+
+/** Upsert one app's display override; apps re-fetch so the shell updates too. */
+export function useSaveOverride() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ app, ...input }: { app: string } & RegistryOverrideInput) =>
+      api<RegistryOverride>(`/api/registry/${encodeURIComponent(app)}`, {
+        method: 'PUT',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['registry'] })
+      queryClient.invalidateQueries({ queryKey: ['apps'] })
+    },
+  })
+}
+
+/** Remove an override — the app falls back to its discovered defaults. */
+export function useDeleteOverride() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (app: string) =>
+      api<void>(`/api/registry/${encodeURIComponent(app)}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['registry'] })
+      queryClient.invalidateQueries({ queryKey: ['apps'] })
+    },
   })
 }
 

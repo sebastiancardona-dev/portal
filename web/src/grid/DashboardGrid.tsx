@@ -2,7 +2,7 @@ import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type
 import { GridStack, type GridItemHTMLElement } from 'gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import type { DashboardLayout, LayoutWidget } from '../api/types'
-import { getWidgetDef, type WidgetConfig } from '../widgets/registry'
+import { getWidgetDef, listWidgetDefs, type WidgetConfig } from '../widgets/registry'
 import { WidgetFrame } from '../widgets/WidgetFrame'
 
 /**
@@ -159,8 +159,21 @@ export function DashboardGrid({
         </div>
       ))}
       {items.length === 0 && (
-        <div className="grid-empty">
-          {editing ? 'Add your first widget with the button above.' : 'This dashboard is empty — switch to edit mode to add widgets.'}
+        <div className="grid-empty-panel">
+          <span className="grid-empty-eyebrow">empty dashboard</span>
+          <span className="grid-empty-title">Build your control room</span>
+          <p className="grid-empty-hint">
+            {editing
+              ? 'Add your first widget with the button above — charts, gauges, uptime strips, and feeds, all live off your VPS.'
+              : 'This dashboard is empty — switch to edit mode to add widgets.'}
+          </p>
+          <div className="grid-empty-strip" aria-hidden="true">
+            {listWidgetDefs()
+              .slice(0, 6)
+              .map((d) => (
+                <d.Preview key={d.type} />
+              ))}
+          </div>
         </div>
       )}
     </div>

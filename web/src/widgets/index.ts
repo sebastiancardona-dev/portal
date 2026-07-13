@@ -1,6 +1,12 @@
+import './widgets.css'
 import { registerWidget } from './registry'
 import { statTileDef } from './StatTile'
 import { lineChartDef } from './LineChartWidget'
+import { barChartDef } from './BarChartWidget'
+import { gaugeDef } from './GaugeWidget'
+import { donutDef } from './DonutWidget'
+import { uptimeHeatmapDef } from './UptimeHeatmapWidget'
+import { deployFeedDef } from './DeployFeedWidget'
 import { statusListDef } from './StatusList'
 import { tableDef } from './TableWidget'
 
@@ -8,6 +14,11 @@ import { tableDef } from './TableWidget'
 export function registerBuiltinWidgets(): void {
   registerWidget(statTileDef)
   registerWidget(lineChartDef)
+  registerWidget(barChartDef)
+  registerWidget(gaugeDef)
+  registerWidget(donutDef)
+  registerWidget(uptimeHeatmapDef)
+  registerWidget(deployFeedDef)
   registerWidget(statusListDef)
   registerWidget(tableDef)
 }
