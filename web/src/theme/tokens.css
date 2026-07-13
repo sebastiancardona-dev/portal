@@ -1,0 +1,110 @@
+/*
+ * Portal design tokens — a calm, dense-but-breathing ops surface.
+ * Dark is the default (index.html sets data-theme before first paint);
+ * light is the override. Chart/status colors follow the validated dataviz
+ * reference palette: categorical slots re-stepped per surface, status colors
+ * reserved (never used as series colors) and always paired with a label.
+ */
+
+:root {
+  /* type */
+  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* dark: the default ops surface */
+  --bg: #0d0e10;
+  --surface: #16181b;
+  --surface-2: #1d2024;
+  --ink: #e8eae6;
+  --muted: #93968f;
+  --line: #26292d;
+  --line-strong: #3a3e43;
+
+  --accent: #3987e5;
+  --accent-ink: #ffffff;
+
+  /* categorical series (dark steps) */
+  --series-1: #3987e5;
+  --series-2: #199e70;
+  --series-3: #c98500;
+  --series-4: #9085e9;
+
+  /* status — reserved, never impersonates a series */
+  --ok: #0ca30c;
+  --warn: #fab219;
+  --down: #d03b3b;
+
+  /* chart chrome */
+  --chart-grid: #26292d;
+  --chart-baseline: #3a3e43;
+  --spark: color-mix(in srgb, var(--accent) 45%, transparent);
+
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+:root[data-theme='light'] {
+  --bg: #f4f4f2;
+  --surface: #fcfcfb;
+  --surface-2: #efeeeb;
+  --ink: #17181a;
+  --muted: #5c5e58;
+  --line: #e1e0d9;
+  --line-strong: #c3c2b7;
+
+  --accent: #2a78d6;
+  --accent-ink: #ffffff;
+
+  /* categorical series (light steps) */
+  --series-1: #2a78d6;
+  --series-2: #1baf7a;
+  --series-3: #eda100;
+  --series-4: #4a3aa7;
+
+  --ok: #0ca30c;
+  --warn: #c07d00; /* darker warning step for legible text on light */
+  --down: #d03b3b;
+
+  --chart-grid: #e1e0d9;
+  --chart-baseline: #c3c2b7;
+
+  --shadow: 0 1px 2px rgb(23 24 26 / 0.06), 0 8px 24px rgb(23 24 26 / 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

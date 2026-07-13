@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: portal-api
+  datasource:
+    # 5433 locally to coexist with moneytrckr's dev Postgres on 5432
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/portal}
+    username: ${DB_USER:portal}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  docker:
+    compose:
+      enabled: false   # opt-in via the "local" profile only
+
+management:
+  endpoints:
+    web:
+      # ecosystem contract (docs/OBSERVABILITY.md): every app answers /health and /info
+      base-path: /
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true   # surfaces INFO_APP_VERSION / INFO_APP_GIT_SHA / INFO_APP_BUILD_TIME
+
+server:
+  port: 8080
+  shutdown: graceful
+
+portal:
+  deploy:
+    # pipeline 03 artifacts, mounted read-only in prod; optional everywhere
+    state-dir: ${PORTAL_DEPLOY_STATE_DIR:/data/deploy/state}
+    log-file: ${PORTAL_DEPLOY_LOG_FILE:/data/deploy/log/deploy.log}
+  docker:
+    # tecnativa docker-socket-proxy (read-only); blank = Docker discovery off
+    api: ${DOCKER_API:}
+  host:
+    proc: ${PORTAL_HOST_PROC:/host/proc}
+    # disk stats piggyback on the deploy-state mount (it lives on the VPS root fs)
+    # instead of mounting the host root — a root-fs mount would expose every
+    # stack's .env secrets to this container. Least privilege by construction.
+    disk-path: ${PORTAL_HOST_DISK_PATH:${portal.deploy.state-dir}}
+  collect:
+    health-interval-ms: ${PORTAL_HEALTH_INTERVAL_MS:30000}
+    host-interval-ms: ${PORTAL_HOST_INTERVAL_MS:30000}
+    container-interval-ms: ${PORTAL_CONTAINER_INTERVAL_MS:60000}
+    initial-delay-ms: ${PORTAL_COLLECT_INITIAL_DELAY_MS:5000}
+  retention:
+    days: ${PORTAL_RETENTION_DAYS:14}
+    cron: ${PORTAL_RETENTION_CRON:0 0 4 * * *}
+  jwt:
+    # override in every real environment; dev-only fallback
+    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    access-ttl: ${JWT_ACCESS_TTL:30m}
+  admin:
+    # v1 local identity: single admin seeded at startup (replaced by project 05)
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+    name: ${ADMIN_NAME:Admin}

@@ -1,0 +1,21 @@
+# Local development only — production runs its own portal-db in the stack.
+# Port 5433 so it coexists with moneytrckr's dev Postgres on 5432.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: portal
+      POSTGRES_USER: portal
+      POSTGRES_PASSWORD: dev-only
+    ports:
+      - "5433:5432"
+    volumes:
+      - portal-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portal -d portal"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  portal-pgdata:
