@@ -9,29 +9,39 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Context loads (which proves the Flyway V1 migration applies against a real
- * Postgres and the JPA schema validates), plus the auth flow, source enumeration
- * with every discovery source absent, and the dashboard layout roundtrip.
+ * Context loads (which proves the Flyway migrations apply against a real
+ * Postgres and the JPA schema validates), plus the SSO identity mapping (JIT
+ * provisioning, group→role), source enumeration with every discovery source
+ * absent, and the dashboard layout roundtrip.
  */
 class PortalApiIT extends AbstractIT {
 
     @Test
-    void loginFlowIssuesUsableToken() {
-        var bad = post("/api/auth/login", null,
-                Map.of("email", ADMIN_EMAIL, "password", "wrong-password"));
-        assertThat(bad.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-
-        var login = post("/api/auth/login", null,
-                Map.of("email", ADMIN_EMAIL, "password", ADMIN_PASSWORD));
-        assertThat(login.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(login.getBody()).containsKey("accessToken");
-        assertThat(((Number) login.getBody().get("expiresIn")).longValue()).isEqualTo(1800L);
-
-        String token = (String) login.getBody().get("accessToken");
-        var me = get("/api/me", token);
+    void ecosystemTokenJitProvisionsAndMapsRoles() {
+        // first call with an admin-group token provisions the local row as admin
+        var me = get("/api/me", adminToken());
         assertThat(me.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(me.getBody()).containsEntry("email", ADMIN_EMAIL)
                 .containsEntry("role", "admin");
+
+        // recruiter group → viewer: a valid session, read-only by mapping
+        var recruiter = get("/api/me", recruiterToken());
+        assertThat(recruiter.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(recruiter.getBody()).containsEntry("role", "viewer");
+    }
+
+    @Test
+    void recruiterSeesOpsDataButRegistryStaysAdminOnly() {
+        String token = recruiterToken();
+        // the console itself is readable — that's the recruiter's whole purpose
+        assertThat(getList("/api/apps", token).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getList("/api/sources", token).getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        // the registry (settings surface) is admin-only in every direction
+        assertThat(get("/api/registry", token).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        var denied = put("/api/registry/moneytrckr", token,
+                Map.of("displayName", "Nope"));
+        assertThat(denied.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test

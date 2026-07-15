@@ -46,8 +46,8 @@ dev.sebastiancardona.portal
 │                 series query service (time-bucketed avg/min/max)
 ├── data/         Data-source API: enumerate sources, latest, series  ← widgets query this
 ├── dashboard/    DashboardLayout entity (one per user, jsonb) + endpoints
-├── auth/         IdentityProvider interface (formalized — 05 swaps the impl),
-│                 v1 impl: local login, single admin from env, short-lived HS256 JWT
+├── auth/         EcosystemIdentity (OIDC claims → local user), TokenRelayFilter,
+│                 User/UserRepository (JIT-provisioned shadow rows), MeController
 ├── config/       SecurityConfig (the single auth swap surface), WebAppConfig, props
 └── common/       CurrentUser, ApiExceptions, ApiExceptionHandler
 ```
@@ -91,14 +91,23 @@ PUT /api/dashboard/layout                 → save my layout   GET → load (or 
 Source id grammar: `health:<app>:<env>` · `latency:<app>:<env>` · `host:<metric>` ·
 `container:<name>:<metric>`. New apps/containers appear as new sources automatically.
 
-### Auth seam
+### Auth (SSO — the 05 swap landed 2026-07-15)
 
-`IdentityProvider` interface + `SecurityConfig` are the only OIDC-touching surfaces.
-v1: `/api/auth/login` (admin from `ADMIN_EMAIL`/`ADMIN_PASSWORD` env, Argon2id),
-30-min HS256 JWT (`JWT_SECRET`), everything under `/api/**` authenticated except
-`/api/auth/**`; `/health` `/info` and the SPA public. When 05 lands: OIDC
-code+PKCE, groups claim → `admin` (write) / `recruiter` (read-only), accounts
-dashboard fed by 05's admin API. No self-registration ever in the portal.
+BFF pattern, transplanted from MoneyTrckr's DESIGN §17: the backend is the OIDC
+confidential client (code + PKCE against `auth.sebastiancardona.dev`); browsers
+hold a session cookie only (Spring Session JDBC — deploys don't log anyone out),
+tokens live server-side and auto-refresh via `OAuth2AuthorizedClientManager`.
+`TokenRelayFilter` re-establishes API auth per request from the session's access
+token; `EcosystemIdentity` maps ecosystem claims onto the local user row
+(JIT-provisioned, linked by `uid` then email) and re-issues the Jwt with
+`sub=<local UUID>` — the contract every controller already spoke. Roles:
+`roles.portal` override wins, else `groups: admin` → `admin` (write), everyone
+else (`recruiter`, `friend`) → `viewer` (read-only; registry writes gate on
+`CurrentUser.isAdmin`). `/health` `/info` and the SPA stay public. Env:
+`PORTAL_OIDC_ISSUER` / `_CLIENT_ID` / `_CLIENT_SECRET`, `PORTAL_PUBLIC_URL`,
+`PORTAL_COOKIE_SECURE`. Logout is RP-initiated (`/connect/logout`). Accounts
+dashboard fed by 05's admin API comes next. No self-registration ever in the
+portal. Local rig + client registration: README §Dev quickstart.
 
 ## Frontend architecture
 
@@ -115,7 +124,7 @@ reading rendered screenshots (`web/scripts/shots.mjs` + `accept.mjs`).
 ```
 web/src
 ├── api/          client.ts (same-origin fetch), hooks.ts (react-query, 30s refetchInterval), types.ts
-├── auth/         login page + token-in-memory context (MoneyTrckr pattern)
+├── auth/         SSO gate (redirect to the auth service) + cookie-session context
 ├── charts/       SVG primitives (no chart lib): TimeSeriesChart (line|area|bar,
 │                 crosshair+tooltip, legend), Gauge, Donut, HeatStrip, Sparkline
 ├── widgets/      SDK: registry.ts — widget = {type, label, description, category,
@@ -148,7 +157,8 @@ portal        ghcr.io/sebastiancardona-dev/portal:<pin>   (Traefik: portal.sebas
           /proc:/host/proc:ro   (NO root-fs mount: it would expose every stack's .env
           secrets read-only. Disk stats come from statvfs on the state mount, which
           lives on the same filesystem as / — deliberate least-privilege decision.)
-  env: DB_*, JWT_SECRET, ADMIN_*, DOCKER_API=http://portal-docker-proxy:2375
+  env: DB_*, PORTAL_OIDC_ISSUER/_CLIENT_ID/_CLIENT_SECRET, PORTAL_PUBLIC_URL,
+       DOCKER_API=http://portal-docker-proxy:2375
 portal-db     postgres:16-alpine (named volume)
 portal-docker-proxy  tecnativa/docker-socket-proxy  (CONTAINERS=1, everything else 0;
   NOT on the proxy network — internal only. Read-only Docker API = the security story.)

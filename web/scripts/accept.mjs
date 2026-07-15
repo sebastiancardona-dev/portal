@@ -17,15 +17,18 @@ mkdirSync(OUT, { recursive: true })
 const browser = await chromium.launch()
 
 async function login(page) {
+  // SSO: redirect through the local auth service (:9000, see api README)
   await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle' })
-  await page.fill('input[type=email]', 'juanse@local.dev')
-  await page.fill('input[type=password]', 'local-admin-password')
-  await page.click('button:has-text("Sign in")')
+  await page.click('.auth-sso-cta')
+  await page.waitForSelector('input[name="username"]')
+  await page.fill('input[name="username"]', 'juanse@local.dev')
+  await page.fill('input[name="password"]', 'local-admin-password')
+  await page.click('button[type="submit"]')
+  await page.waitForURL('http://localhost:5173/**')
 }
 
 // ---------- main pass: axes, dialog steps, large gauge ----------
-// a transient API 401 drops the in-memory session and bounces to /login —
-// retry the whole pass on a fresh page if that happens mid-run
+// retry the whole pass on a fresh page if a transient hiccup bounces it mid-run
 let attempt = 0
 main: while (true) {
   attempt++

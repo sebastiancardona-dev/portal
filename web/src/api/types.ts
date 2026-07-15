@@ -1,9 +1,11 @@
 /** Wire types — mirror the backend contract exactly (see docs/DESIGN.md). */
 
+/** The signed-in identity, bootstrapped from the session cookie via /api/me. */
 export interface Session {
-  accessToken: string
-  /** seconds until the token expires (no refresh — we log out) */
-  expiresIn: number
+  email: string
+  /** 'admin' (full) | 'viewer' (read-only: recruiter/friend) */
+  role: string
+  name: string
 }
 
 export interface Me {

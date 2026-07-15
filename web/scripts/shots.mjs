@@ -1,6 +1,7 @@
 /* Screenshot sweep for the redesign verification loop.
  * Run from web/: node scripts/shots.mjs [outDir]
- * Auth token is in-memory only — navigate via the SPA, never page.goto after login.
+ * SSO: sign-in happens on the local auth service (:9000, see api README);
+ * the session is a cookie, so page.goto after login is fine now.
  */
 import { chromium } from 'playwright'
 import { mkdirSync } from 'node:fs'
@@ -22,10 +23,12 @@ try {
   await page.waitForTimeout(400)
   await shot('01-login')
 
-  // ---- sign in ----
-  await page.fill('input[type=email]', 'juanse@local.dev')
-  await page.fill('input[type=password]', 'local-admin-password')
-  await page.click('button:has-text("Sign in")')
+  // ---- sign in (redirect through the local auth service) ----
+  await page.click('.auth-sso-cta')
+  await page.waitForSelector('input[name="username"]')
+  await page.fill('input[name="username"]', 'juanse@local.dev')
+  await page.fill('input[name="password"]', 'local-admin-password')
+  await page.click('button[type="submit"]')
   await page.waitForSelector('.grid-stack', { timeout: 15000 })
   await page.waitForTimeout(3500) // let charts and polls land
   await shot('02-dashboard')

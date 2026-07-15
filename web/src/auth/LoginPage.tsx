@@ -1,36 +1,24 @@
-import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
-import { ApiError, login } from '../api/client'
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
+import { login } from '../api/client'
 import { useAuth } from './AuthContext'
 
+/**
+ * The SSO gate. Sign-in lives on the ecosystem's auth service (project 05);
+ * this page's whole job is to hand the operator off there — and to say, in
+ * console vernacular, exactly where they are being sent.
+ */
 export function LoginPage() {
-  const { authed } = useAuth()
+  const { authed, restoring } = useAuth()
   const location = useLocation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [params] = useSearchParams()
+  // Spring redirects to /login?error when the OIDC round-trip fails
+  const failed = params.has('error')
+
+  if (restoring) return null
 
   if (authed) {
     const from = (location.state as { from?: string } | null)?.from ?? '/'
     return <Navigate to={from} replace />
-  }
-
-  async function submit(event: FormEvent) {
-    event.preventDefault()
-    setBusy(true)
-    setError(null)
-    try {
-      await login(email, password)
-    } catch (e) {
-      setError(
-        e instanceof ApiError && e.status === 401
-          ? 'Wrong email or password.'
-          : 'Could not sign in — is the API up?',
-      )
-    } finally {
-      setBusy(false)
-    }
   }
 
   return (
@@ -38,37 +26,21 @@ export function LoginPage() {
       <div className="auth-panel">
         <div className="auth-brand">Portal</div>
         <p className="auth-tagline">Operations console · sebastiancardona.dev</p>
-        <form className="auth-form" onSubmit={submit}>
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-              autoFocus
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </label>
-          {error && (
+        <div className="auth-sso">
+          <span className="eyebrow">Identity</span>
+          <p className="auth-sso-issuer">
+            <span className="mono">auth.sebastiancardona.dev</span> — one account for the
+            whole ecosystem.
+          </p>
+          {failed && (
             <p className="form-error" role="alert">
-              {error}
+              Sign-in didn&apos;t complete. Try again.
             </p>
           )}
-          <button className="btn btn-primary" disabled={busy}>
-            {busy ? 'Signing in…' : 'Sign in'}
+          <button className="btn btn-primary auth-sso-cta" onClick={login}>
+            Continue to sign in
           </button>
-        </form>
+        </div>
         <p className="auth-foot">read-only by construction</p>
       </div>
     </div>

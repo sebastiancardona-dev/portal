@@ -749,6 +749,28 @@ h3 {
   margin: 0;
 }
 
+/* the SSO gate: identity block naming the destination, one action */
+.auth-sso {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 2px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.auth-sso-issuer {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-sso-cta {
+  margin-top: 8px;
+  width: 100%;
+}
+
 .auth-foot {
   font: 400 11px var(--font-mono);
   color: var(--text-3);

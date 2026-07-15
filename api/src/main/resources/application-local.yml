@@ -1,5 +1,7 @@
-# Local development profile: auto-starts the compose Postgres, seeds an admin and
-# points discovery at the checked-in fixtures (no VPS mounts on a dev machine).
+# Local development profile: auto-starts the compose Postgres and points discovery
+# at the checked-in fixtures (no VPS mounts on a dev machine). Identity: run the
+# auth service locally on :9000 (SERVER_PORT=9000, its "local" profile) and register
+# a `portal` client against it — see README.
 # Run: ./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
 spring:
   docker:
@@ -10,11 +12,15 @@ spring:
   datasource:
     password: dev-only
 
+# plain-http localhost: a Secure cookie would never be sent back
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false
+
 portal:
   deploy:
     # relative to api/ (the spring-boot:run working directory)
     state-dir: ${PORTAL_DEPLOY_STATE_DIR:dev-fixtures/deploy-state}
     log-file: ${PORTAL_DEPLOY_LOG_FILE:dev-fixtures/deploy-log/deploy.log}
-  admin:
-    email: ${ADMIN_EMAIL:juanse@local.dev}
-    password: ${ADMIN_PASSWORD:local-admin-password}

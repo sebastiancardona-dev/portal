@@ -12,6 +12,29 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  session:
+    jdbc:
+      initialize-schema: never   # Flyway owns the DDL (V2)
+    timeout: 7d                  # ops console: a working week, not a phone app
+  security:
+    oauth2:
+      client:
+        registration:
+          ecosystem:
+            client-id: ${PORTAL_OIDC_CLIENT_ID:portal}
+            client-secret: ${PORTAL_OIDC_CLIENT_SECRET:dev-only}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/ecosystem"
+            scope: openid, profile
+        provider:
+          ecosystem:
+            # explicit endpoints (not issuer-uri): no discovery fetch at boot, so the
+            # app starts even when the auth service is down
+            authorization-uri: ${PORTAL_OIDC_ISSUER:http://localhost:9000}/oauth2/authorize
+            token-uri: ${PORTAL_OIDC_ISSUER:http://localhost:9000}/oauth2/token
+            jwk-set-uri: ${PORTAL_OIDC_ISSUER:http://localhost:9000}/oauth2/jwks
+            user-info-uri: ${PORTAL_OIDC_ISSUER:http://localhost:9000}/userinfo
+            user-name-attribute: sub
   docker:
     compose:
       enabled: false   # opt-in via the "local" profile only
@@ -34,6 +57,12 @@ management:
 server:
   port: 8080
   shutdown: graceful
+  forward-headers-strategy: framework   # behind Traefik: OIDC redirect_uri must be https
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+        secure: ${PORTAL_COOKIE_SECURE:true}
 
 portal:
   deploy:
@@ -57,12 +86,7 @@ portal:
   retention:
     days: ${PORTAL_RETENTION_DAYS:14}
     cron: ${PORTAL_RETENTION_CRON:0 0 4 * * *}
-  jwt:
-    # override in every real environment; dev-only fallback
-    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
-    access-ttl: ${JWT_ACCESS_TTL:30m}
-  admin:
-    # v1 local identity: single admin seeded at startup (replaced by project 05)
-    email: ${ADMIN_EMAIL:}
-    password: ${ADMIN_PASSWORD:}
-    name: ${ADMIN_NAME:Admin}
+  # identity lives on the auth service (project 05); MoneyTrckr's DESIGN §17 pattern
+  oidc:
+    issuer: ${PORTAL_OIDC_ISSUER:http://localhost:9000}
+  public-url: ${PORTAL_PUBLIC_URL:http://localhost:8080}

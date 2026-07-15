@@ -11,7 +11,7 @@ public final class CurrentUser {
         return UUID.fromString(jwt.getSubject());
     }
 
-    /** v1: the seeded local account is always admin; 05's OIDC maps groups → roles. */
+    /** Mapped by EcosystemIdentity: ecosystem admin group (or roles.portal) → admin. */
     public static boolean isAdmin(Jwt jwt) {
         return "admin".equals(jwt.getClaim("role"));
     }

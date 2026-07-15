@@ -9,7 +9,10 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
-/** v1: a single seeded admin. The table (not this class) survives the 05 swap. */
+/**
+ * Local shadow of an ecosystem account (JIT-provisioned on first OIDC login).
+ * Dashboard layouts FK this id; identity itself lives on the auth service.
+ */
 @Entity
 @Table(name = "users")
 public class User {
@@ -24,11 +27,13 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    /** The auth service's user id (JWT `uid` claim); the durable link across email changes. */
+    @Column(name = "auth_uid", unique = true)
+    private UUID authUid;
 
+    /** 'admin' (full) | 'viewer' (read-only) — mirrored from ecosystem claims per request. */
     @Column(nullable = false)
-    private String role = "admin";
+    private String role = "viewer";
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private Instant createdAt;
@@ -36,10 +41,9 @@ public class User {
     protected User() {
     }
 
-    public User(String email, String name, String passwordHash, String role) {
+    public User(String email, String name, String role) {
         this.email = email;
         this.name = name;
-        this.passwordHash = passwordHash;
         this.role = role;
     }
 
@@ -55,16 +59,20 @@ public class User {
         return name;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public UUID getAuthUid() {
+        return authUid;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setAuthUid(UUID authUid) {
+        this.authUid = authUid;
     }
 
     public String getRole() {
         return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Instant getCreatedAt() {

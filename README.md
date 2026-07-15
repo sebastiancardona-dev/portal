@@ -20,20 +20,37 @@ compose.yaml  local dev Postgres only (port 5433; spring-boot-docker-compose sta
 
 ## Dev quickstart
 
-Requirements: Java 21, Node 22, Docker (for the dev DB and integration tests).
+Requirements: Java 21, Node 22, Docker (for the dev DBs and integration tests).
+
+Identity lives on the auth service (project 05) — the local rig runs it on :9000
+(its own Postgres goes on 5434 so it coexists with portal's on 5433):
 
 ```sh
-# API — the local profile auto-starts the compose Postgres and seeds an admin
-# (juanse@local.dev / local-admin-password), and points discovery at the
-# checked-in fixtures in api/dev-fixtures/.
-cd api && ./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
+# 1. auth service on :9000 (from the auth-service repo)
+docker run -d --name auth-dev-pg-5434 -e POSTGRES_DB=auth -e POSTGRES_USER=auth \
+  -e POSTGRES_PASSWORD=dev-only -p 5434:5432 postgres:16-alpine
+SERVER_PORT=9000 AUTH_ISSUER=http://localhost:9000 \
+  DB_URL=jdbc:postgresql://localhost:5434/auth \
+  ./mvnw spring-boot:run "-Dspring-boot.run.profiles=local" \
+  "-Dspring-boot.run.arguments=--spring.docker.compose.enabled=false"
 
-# Web (separate terminal)
+# 2. register the `portal` OIDC client (headless PKCE login as the seeded admin;
+#    prints the client secret once)
+python scripts/register-local-oidc-client.py
+
+# 3. API — the local profile auto-starts the compose Postgres and points
+#    discovery at the checked-in fixtures in api/dev-fixtures/.
+cd api && PORTAL_OIDC_CLIENT_SECRET=<from step 2> \
+  ./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
+
+# 4. Web (separate terminal)
 cd web && npm run dev
 ```
 
-Running `docker compose up -d` yourself is optional — the local profile manages
-the DB container for you.
+Sign in at http://localhost:5173 as `juanse@local.dev` / `local-admin-password`
+(the auth service's seeded local admin). Steps 1–2 are once per dev machine —
+the containers keep their data across restarts (step 1's DB has no volume; if
+you remove the container, rerun step 2).
 
 ## Tests
 

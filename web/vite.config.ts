@@ -10,6 +10,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': apiTarget,
+      // SSO (BFF): the login redirect, OIDC callback and logout all live on the
+      // API — proxying them keeps the session cookie same-origin in dev.
+      // changeOrigin must stay OFF so Spring sees Host localhost:5173 and builds
+      // the OIDC redirect_uri on the SPA origin, not the API's.
+      '/oauth2': { target: apiTarget, changeOrigin: false },
+      '/login/oauth2': { target: apiTarget, changeOrigin: false },
+      '/logout': { target: apiTarget, changeOrigin: false },
     },
   },
 })

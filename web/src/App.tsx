@@ -9,8 +9,10 @@ import { SettingsPage } from './pages/SettingsPage'
 import { AppShell } from './shell/AppShell'
 
 function RequireAuth() {
-  const { authed } = useAuth()
+  const { authed, restoring } = useAuth()
   const location = useLocation()
+  // session bootstrap in flight: paint nothing rather than flash the gate
+  if (restoring) return null
   if (!authed) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
