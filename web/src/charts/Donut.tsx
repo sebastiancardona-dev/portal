@@ -130,7 +130,9 @@ export function Donut({
             onPointerLeave={() => setHovered(null)}
           >
             <span className="legend-chip" style={{ background: s.color }} />
-            <span className="donut-legend-label">{s.label}</span>
+            {/* labels ellipsize (container names share long prefixes) — the
+                full name must stay reachable without relying on the ring hover */}
+            <span className="donut-legend-label" title={s.label}>{s.label}</span>
             <span className="donut-legend-value">{fmt(s.value, unit)}</span>
             <span className="donut-legend-pct">{s.pct >= 10 ? Math.round(s.pct) : s.pct.toFixed(1)}%</span>
           </div>

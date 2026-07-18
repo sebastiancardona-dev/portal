@@ -70,7 +70,8 @@ function RegistryRow({ row }: { row: Row }) {
       <td className="settings-actions">
         <button
           type="button"
-          className="btn btn-primary"
+          // secondary until there is actually something to save
+          className={dirty ? 'btn btn-primary' : 'btn'}
           disabled={!dirty || save.isPending}
           onClick={() =>
             save.mutate({ app: row.app, displayName, icon, visible, healthPath })

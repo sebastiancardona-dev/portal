@@ -85,6 +85,33 @@ try {
   await page.waitForTimeout(600)
   await shot('10-settings')
 
+  // ---- accounts (admin module: SSO users, invites, audit) ----
+  await page.click('a[href="/accounts"]')
+  await page.waitForSelector('.mint-form', { timeout: 10000 })
+  await page.waitForTimeout(800)
+  await shot('12-accounts')
+
+  // mint an invite so the one-time link panel renders
+  await page.selectOption('.mint-form select', 'recruiter')
+  await page.fill('.mint-form .mint-note input', 'screenshot drill')
+  await page.click('button:has-text("Mint invite")')
+  await page.waitForSelector('.mint-result', { timeout: 10000 })
+  await page.waitForTimeout(400)
+  await shot('13-accounts-minted')
+
+  // arm the revoke on the invite we just minted (destructive two-step)
+  await page.click('tr:has-text("screenshot drill") button:has-text("Revoke")')
+  await page.waitForTimeout(300)
+  await shot('14-accounts-revoke-armed')
+  await page.click('button:has-text("Confirm revoke")')
+  await page.waitForTimeout(600)
+
+  // ---- accounts, mobile ----
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.waitForTimeout(800)
+  await shot('15-accounts-mobile')
+  await page.setViewportSize({ width: 1440, height: 900 })
+
   // ---- mobile dashboard (viewport resize keeps the in-memory session) ----
   await page.click('a[href="/"]')
   await page.waitForSelector('.grid-stack', { timeout: 10000 })

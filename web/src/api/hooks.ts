@@ -2,12 +2,18 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 import { useAuth } from '../auth/AuthContext'
 import { api, ApiError } from './client'
 import type {
+  AccountUser,
   AppDetail,
   AppSummary,
+  AuditEvent,
+  AuthClient,
   DashboardLayout,
   DeployEventGlobal,
   HostSnapshot,
+  Invite,
   Me,
+  MintInviteInput,
+  MintedInvite,
   Point,
   RegistryOverride,
   RegistryOverrideInput,
@@ -170,6 +176,82 @@ export function useDeleteOverride() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['registry'] })
       queryClient.invalidateQueries({ queryKey: ['apps'] })
+    },
+  })
+}
+
+/* --------------------- accounts (auth-service relay) --------------------- */
+/* Admin only: gated on the session role so a viewer never fires doomed 403s.
+   The backend re-gates, and the auth service checks the relayed token again. */
+
+function useIsAdmin(): boolean {
+  return useMe().data?.role === 'admin'
+}
+
+export function useAccountUsers() {
+  const admin = useIsAdmin()
+  return useQuery({
+    queryKey: ['accounts', 'users'],
+    queryFn: () => api<AccountUser[]>('/api/accounts/users'),
+    enabled: admin,
+    retry: retryUnlessGone,
+  })
+}
+
+export function useInvites() {
+  const admin = useIsAdmin()
+  return useQuery({
+    queryKey: ['accounts', 'invites'],
+    queryFn: () => api<Invite[]>('/api/accounts/invites'),
+    enabled: admin,
+    retry: retryUnlessGone,
+  })
+}
+
+export function useAuthClients() {
+  const admin = useIsAdmin()
+  return useQuery({
+    queryKey: ['accounts', 'clients'],
+    queryFn: () => api<AuthClient[]>('/api/accounts/clients'),
+    enabled: admin,
+    retry: retryUnlessGone,
+  })
+}
+
+export function useAudit(limit = 100) {
+  const admin = useIsAdmin()
+  return useQuery({
+    queryKey: ['accounts', 'audit', limit],
+    queryFn: () => api<AuditEvent[]>(`/api/accounts/audit?limit=${limit}`),
+    enabled: admin,
+    refetchInterval: POLL,
+    retry: retryUnlessGone,
+  })
+}
+
+export function useMintInvite() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: MintInviteInput) =>
+      api<MintedInvite>('/api/accounts/invites', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'invites'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'audit'] })
+    },
+  })
+}
+
+export function useRevokeInvite() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      api<void>(`/api/accounts/invites/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'invites'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'audit'] })
     },
   })
 }

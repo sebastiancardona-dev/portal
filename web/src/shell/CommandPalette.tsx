@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowDown, ArrowUp, CornerDownLeft } from 'lucide-react'
-import { useApps, useSources } from '../api/hooks'
+import { useApps, useMe, useSources } from '../api/hooks'
 import { appStatusState, StatusDot, type StatusState } from '../ui'
 
 interface PaletteItem {
@@ -27,6 +27,11 @@ const PAGES: PaletteItem[] = [
   { key: 'page-settings', group: 'pages', label: 'Settings', hint: '/settings', to: '/settings' },
 ]
 
+/** Admin-only pages — appended when the session role allows them. */
+const ADMIN_PAGES: PaletteItem[] = [
+  { key: 'page-accounts', group: 'pages', label: 'Accounts', hint: '/accounts', to: '/accounts' },
+]
+
 function matches(item: PaletteItem, q: string): boolean {
   return (
     item.label.toLowerCase().includes(q) || (item.hint ?? '').toLowerCase().includes(q)
@@ -42,6 +47,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
   const apps = useApps()
   const sources = useSources()
+  const me = useMe()
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -69,9 +75,10 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         hint: s.id,
         to: s.app ? `/apps/${s.app}` : '/host',
       })) ?? []
-    const all = q === '' ? [...PAGES, ...appItems] : [...PAGES, ...appItems, ...sourceItems]
+    const pages = me.data?.role === 'admin' ? [...PAGES, ...ADMIN_PAGES] : PAGES
+    const all = q === '' ? [...pages, ...appItems] : [...pages, ...appItems, ...sourceItems]
     return q === '' ? all : all.filter((item) => matches(item, q))
-  }, [query, apps.data, sources.data])
+  }, [query, apps.data, sources.data, me.data])
 
   useEffect(() => {
     inputRef.current?.focus()

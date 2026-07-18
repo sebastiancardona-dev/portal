@@ -126,6 +126,77 @@ export interface RegistryOverrideInput {
   healthPath?: string | null
 }
 
+/* ---------------- accounts (admin — relayed from the auth service) ---------------- */
+
+/** One app the user actually signed into (recorded at token issuance). */
+export interface AppUsage {
+  clientId: string
+  firstUsedAt: string
+  lastUsedAt: string
+  useCount: number
+}
+
+export interface AccountUser {
+  id: string
+  email: string
+  displayName: string
+  groups: string[]
+  disabled: boolean
+  createdAt: string
+  apps: AppUsage[]
+}
+
+export interface InviteRedeemer {
+  email: string
+  displayName: string
+  redeemedAt: string
+}
+
+export interface Invite {
+  id: string
+  group: string
+  uses: number
+  maxUses: number
+  expiresAt: string
+  revokedAt: string | null
+  note: string | null
+  redemptions: InviteRedeemer[]
+}
+
+export interface MintInviteInput {
+  group: string
+  ttlDays: number
+  maxUses: number
+  note?: string
+}
+
+/** The token/registerUrl are shown exactly once — only the hash is stored. */
+export interface MintedInvite {
+  id: string
+  token: string
+  registerUrl: string
+  expiresAt: string
+  maxUses: number
+}
+
+export interface AuthClient {
+  clientId: string
+  name: string
+  redirectUris: string[]
+  scopes: string[]
+  confidential: boolean
+}
+
+/** Raw audit row from the auth service (snake_case comes from its SQL). */
+export interface AuditEvent {
+  at: string
+  event: string
+  actor_id: string | null
+  subject: string | null
+  detail: Record<string, unknown> | null
+  ip: string | null
+}
+
 export interface LayoutWidget {
   id: string
   type: string

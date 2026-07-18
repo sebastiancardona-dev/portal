@@ -47,7 +47,9 @@ import java.util.concurrent.ConcurrentHashMap;
         "portal.deploy.state-dir=target/it-missing/deploy-state",
         "portal.deploy.log-file=target/it-missing/deploy.log",
         "portal.host.proc=target/it-missing/proc",
-        "portal.host.disk-path=target/it-missing/disk"
+        "portal.host.disk-path=target/it-missing/disk",
+        // dead port: the accounts relay must degrade to 502, never hit a live dev rig
+        "portal.oidc.issuer=http://127.0.0.1:59999"
 })
 @Import(AbstractIT.TestDecoder.class) // nested @TestConfiguration isn't inherited by itself
 public abstract class AbstractIT {

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
 import { LoginPage } from './auth/LoginPage'
+import { AccountsPage } from './pages/AccountsPage'
 import { AppDetailPage } from './pages/AppDetailPage'
 import { AppsPage } from './pages/AppsPage'
 import { DashboardPage } from './pages/DashboardPage'
@@ -28,6 +29,7 @@ export function App() {
         <Route path="/apps" element={<AppsPage />} />
         <Route path="/apps/:app" element={<AppDetailPage />} />
         <Route path="/host" element={<HostPage />} />
+        <Route path="/accounts" element={<AccountsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -34,6 +34,12 @@ public class ApiExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
+    @ExceptionHandler(ApiExceptions.UpstreamException.class)
+    ProblemDetail upstream(ApiExceptions.UpstreamException e) {
+        return ProblemDetail.forStatusAndDetail(
+                org.springframework.http.HttpStatusCode.valueOf(e.status()), e.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail invalid(MethodArgumentNotValidException e) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);

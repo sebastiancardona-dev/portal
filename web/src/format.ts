@@ -62,19 +62,20 @@ export function fmtRelative(ts: string | number | Date, now = Date.now()): strin
   const d = new Date(ts).getTime()
   if (Number.isNaN(d)) return '—'
   const diff = now - d
-  if (diff < 0) return 'just now'
-  const s = Math.floor(diff / 1000)
+  // future timestamps (invite/token expiries) read as "in 7d", past as "7d ago"
+  const phrase = (n: string) => (diff < 0 ? `in ${n}` : `${n} ago`)
+  const s = Math.floor(Math.abs(diff) / 1000)
   if (s < 10) return 'just now'
-  if (s < 60) return `${s}s ago`
+  if (s < 60) return phrase(`${s}s`)
   const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m ago`
+  if (m < 60) return phrase(`${m}m`)
   const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
+  if (h < 24) return phrase(`${h}h`)
   const days = Math.floor(h / 24)
-  if (days < 30) return `${days}d ago`
+  if (days < 30) return phrase(`${days}d`)
   const months = Math.floor(days / 30)
-  if (months < 12) return `${months}mo ago`
-  return `${Math.floor(months / 12)}y ago`
+  if (months < 12) return phrase(`${months}mo`)
+  return phrase(`${Math.floor(months / 12)}y`)
 }
 
 /** Axis tick label for a time value, scaled to the visible span. */

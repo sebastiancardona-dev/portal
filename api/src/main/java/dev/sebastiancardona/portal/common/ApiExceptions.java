@@ -30,6 +30,20 @@ public final class ApiExceptions {
         }
     }
 
+    /** Upstream service failed — relayed with its status (502 when unreachable). */
+    public static class UpstreamException extends RuntimeException {
+        private final int status;
+
+        public UpstreamException(int status, String message) {
+            super(message);
+            this.status = status;
+        }
+
+        public int status() {
+            return status;
+        }
+    }
+
     private ApiExceptions() {
     }
 }

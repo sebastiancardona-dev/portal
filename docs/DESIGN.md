@@ -105,9 +105,24 @@ token; `EcosystemIdentity` maps ecosystem claims onto the local user row
 else (`recruiter`, `friend`) → `viewer` (read-only; registry writes gate on
 `CurrentUser.isAdmin`). `/health` `/info` and the SPA stay public. Env:
 `PORTAL_OIDC_ISSUER` / `_CLIENT_ID` / `_CLIENT_SECRET`, `PORTAL_PUBLIC_URL`,
-`PORTAL_COOKIE_SECURE`. Logout is RP-initiated (`/connect/logout`). Accounts
-dashboard fed by 05's admin API comes next. No self-registration ever in the
-portal. Local rig + client registration: README §Dev quickstart.
+`PORTAL_COOKIE_SECURE`. Logout is RP-initiated (`/connect/logout`). No
+self-registration ever in the portal. Local rig + client registration: README
+§Dev quickstart.
+
+### Accounts module (landed 2026-07-18 — 05's admin UI lives here)
+
+`/accounts` (admin-only: nav + palette entries hidden for viewers, route renders
+a quiet refusal, API self-gates) is the auth service's admin UI. The backend is a
+thin relay (`accounts/AuthAdminClient` → `/api/accounts/**`): every call forwards
+the **operator's own ecosystem access token** (the local Jwt keeps the raw token
+value, auto-refreshed by the BFF session) — no portal credentials, no M2M client;
+authorization stays on the auth service, which re-checks the admin group. A dead
+auth service degrades to an honest 502 (`UpstreamException`). Payloads pass
+through untyped: the auth service owns those shapes. Views: People (users +
+groups + per-app usage from 05's `user_app_activity`, recorded at token mint),
+Invites (mint form → one-time link panel → list with two-step revoke), Audit
+trail, OIDC clients. User group-editing/disable relays exist in the API
+(`PATCH /api/accounts/users/{id}`) but have no UI yet.
 
 ## Frontend architecture
 
@@ -175,4 +190,5 @@ Onboarding: two ~15-line workflow callers + `VPS_SSH_KEY` secret + Dockerfile ho
 - Postgres-as-TSDB is a deliberate, documented trade-off; the Prometheus migration is
   the case study's "evolution" chapter.
 - Out of scope for MVP: alerting, SLO/error budgets, public status page, multiple
-  named dashboards, SSE push, logs (07), versions/artifacts (08), accounts view (post-05).
+  named dashboards, SSE push, logs (07), versions/artifacts (08), accounts UI for
+  user group-editing/disable (relay endpoint already live).
