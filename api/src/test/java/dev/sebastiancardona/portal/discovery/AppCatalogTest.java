@@ -154,4 +154,36 @@ class AppCatalogTest {
                 "traefik.enable", "true"));
         assertThat(hosts).containsExactlyInAnyOrder("a.example.dev", "b.example.dev");
     }
+
+    @Test
+    void deriveUrlFollowsTheEcosystemConvention() {
+        assertThat(AppCatalog.deriveUrl("tools.example.dev", "prod"))
+                .isEqualTo("https://tools.example.dev");
+        assertThat(AppCatalog.deriveUrl("tools.example.dev", "test"))
+                .isEqualTo("https://tools-test.example.dev");
+        // apex hosts have no test-host convention — no URL beats a wrong one
+        assertThat(AppCatalog.deriveUrl("example.dev", "test")).isNull();
+        assertThat(AppCatalog.deriveUrl("example.dev", "prod")).isEqualTo("https://example.dev");
+    }
+
+    @Test
+    void baseHostFillsUrlsOnlyWhereDockerGaveNone() {
+        Instant deployed = Instant.parse("2026-07-17T10:00:00Z");
+        when(states.read()).thenReturn(List.of(
+                new DeployState("tools", "prod", "v0.1.0", "success", deployed),
+                new DeployState("tools", "test", "v0.1.1", "success", deployed)));
+        // docker discovered prod's real URL; the test slot has no docker sources
+        when(docker.listContainers()).thenReturn(List.of(
+                new ContainerSummary("id1", "tools-web-1", "running", Map.of(
+                        "com.docker.compose.project", "tools",
+                        "traefik.http.routers.tools.rule", "Host(`tools.custom.dev`)"))));
+        AppOverride override = new AppOverride("tools");
+        override.setBaseHost("tools.example.dev");
+        when(overrides.findAll()).thenReturn(List.of(override));
+
+        CatalogApp app = catalog.apps().getFirst();
+
+        assertThat(app.environments().get("prod").url()).isEqualTo("https://tools.custom.dev");
+        assertThat(app.environments().get("test").url()).isEqualTo("https://tools-test.example.dev");
+    }
 }

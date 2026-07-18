@@ -30,16 +30,16 @@ public class RegistryController {
     }
 
     public record OverrideView(String app, String displayName, String icon, boolean visible,
-                               String healthPath) {
+                               String healthPath, String baseHost) {
 
         static OverrideView of(AppOverride o) {
             return new OverrideView(o.getApp(), o.getDisplayName(), o.getIcon(),
-                    o.isVisible(), o.getHealthPath());
+                    o.isVisible(), o.getHealthPath(), o.getBaseHost());
         }
     }
 
     public record OverrideRequest(String displayName, String icon, Boolean visible,
-                                  String healthPath) {
+                                  String healthPath, String baseHost) {
     }
 
     @GetMapping
@@ -65,6 +65,7 @@ public class RegistryController {
         override.setIcon(blankToNull(request.icon()));
         override.setVisible(request.visible() == null || request.visible());
         override.setHealthPath(blankToNull(request.healthPath()));
+        override.setBaseHost(stripHost(request.baseHost()));
         return OverrideView.of(overrides.save(override));
     }
 
@@ -84,5 +85,15 @@ public class RegistryController {
 
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.strip();
+    }
+
+    /** Stored as a bare host — tolerate a pasted URL or trailing slash. */
+    private static String stripHost(String value) {
+        String host = blankToNull(value);
+        if (host == null) {
+            return null;
+        }
+        host = host.replaceFirst("^https?://", "");
+        return host.endsWith("/") ? host.substring(0, host.length() - 1) : host;
     }
 }

@@ -17,12 +17,14 @@ function RegistryRow({ row }: { row: Row }) {
   const [icon, setIcon] = useState(row.override?.icon ?? '')
   const [visible, setVisible] = useState(row.override?.visible ?? true)
   const [healthPath, setHealthPath] = useState(row.override?.healthPath ?? '')
+  const [baseHost, setBaseHost] = useState(row.override?.baseHost ?? '')
 
   const dirty =
     displayName !== (row.override?.displayName ?? '') ||
     icon !== (row.override?.icon ?? '') ||
     visible !== (row.override?.visible ?? true) ||
-    healthPath !== (row.override?.healthPath ?? '')
+    healthPath !== (row.override?.healthPath ?? '') ||
+    baseHost !== (row.override?.baseHost ?? '')
 
   return (
     <tr>
@@ -67,6 +69,17 @@ function RegistryRow({ row }: { row: Row }) {
           aria-label={`Health path for ${row.app}`}
         />
       </td>
+      <td>
+        <input
+          type="text"
+          className="mono"
+          value={baseHost}
+          onChange={(e) => setBaseHost(e.target.value)}
+          placeholder="auto (docker)"
+          title="Bare host, e.g. tools.example.dev — builds env URLs when Docker discovery is absent (test = first label + -test)"
+          aria-label={`Base host for ${row.app}`}
+        />
+      </td>
       <td className="settings-actions">
         <button
           type="button"
@@ -74,7 +87,7 @@ function RegistryRow({ row }: { row: Row }) {
           className={dirty ? 'btn btn-primary' : 'btn'}
           disabled={!dirty || save.isPending}
           onClick={() =>
-            save.mutate({ app: row.app, displayName, icon, visible, healthPath })
+            save.mutate({ app: row.app, displayName, icon, visible, healthPath, baseHost })
           }
         >
           {save.isPending ? 'Saving…' : 'Save'}
@@ -150,6 +163,7 @@ export function SettingsPage() {
                   <th>Icon</th>
                   <th>Visible</th>
                   <th>Health path</th>
+                  <th>Base host</th>
                   <th />
                 </tr>
               </thead>

@@ -116,6 +116,8 @@ export interface RegistryOverride {
   icon: string | null
   visible: boolean
   healthPath: string | null
+  /** URL fallback when Docker discovery is absent (test slot); bare host */
+  baseHost: string | null
 }
 
 /** PUT body — omitted/blank fields fall back to the discovered values. */
@@ -124,6 +126,7 @@ export interface RegistryOverrideInput {
   icon?: string | null
   visible?: boolean
   healthPath?: string | null
+  baseHost?: string | null
 }
 
 /* ---------------- accounts (admin — relayed from the auth service) ---------------- */

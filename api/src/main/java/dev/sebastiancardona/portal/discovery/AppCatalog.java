@@ -130,6 +130,24 @@ public class AppCatalog {
                 : service;
     }
 
+    /**
+     * URL by ecosystem convention (project 03): prod lives at the base host,
+     * every other env inserts `-<env>` after the first label
+     * (tools.example.dev + test → tools-test.example.dev).
+     */
+    public static String deriveUrl(String baseHost, String env) {
+        if ("prod".equals(env)) {
+            return "https://" + baseHost;
+        }
+        int dot = baseHost.indexOf('.');
+        // a real subdomain has ≥2 dots (tools.example.dev); an apex (example.dev)
+        // has no test-host convention to lean on
+        if (dot <= 0 || baseHost.indexOf('.', dot + 1) < 0) {
+            return null;
+        }
+        return "https://" + baseHost.substring(0, dot) + "-" + env + baseHost.substring(dot);
+    }
+
     /** Host(`...`) values from any traefik router rule label. */
     public static List<String> extractHosts(Map<String, String> labels) {
         List<String> hosts = new ArrayList<>();
@@ -160,7 +178,14 @@ public class AppCatalog {
 
         CatalogApp build() {
             Map<String, EnvView> envs = new LinkedHashMap<>();
-            environments.forEach((name, env) -> envs.put(name, env.build()));
+            environments.forEach((name, env) -> {
+                // baseHost fallback: an env without a Docker-discovered URL (the
+                // test slot has no Docker sources) still gets a probeable URL
+                if (env.url == null && override != null && override.getBaseHost() != null) {
+                    env.url = deriveUrl(override.getBaseHost(), name);
+                }
+                envs.put(name, env.build());
+            });
             String displayName = override != null && override.getDisplayName() != null
                     ? override.getDisplayName() : app;
             return new CatalogApp(app, displayName,

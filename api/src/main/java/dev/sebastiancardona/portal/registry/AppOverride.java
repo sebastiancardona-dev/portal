@@ -27,6 +27,10 @@ public class AppOverride {
     @Column(name = "health_path")
     private String healthPath;
 
+    /** e.g. tools.sebastiancardona.dev — URL fallback when Docker discovery is absent. */
+    @Column(name = "base_host")
+    private String baseHost;
+
     protected AppOverride() {
     }
 
@@ -68,5 +72,13 @@ public class AppOverride {
 
     public void setHealthPath(String healthPath) {
         this.healthPath = healthPath;
+    }
+
+    public String getBaseHost() {
+        return baseHost;
+    }
+
+    public void setBaseHost(String baseHost) {
+        this.baseHost = baseHost;
     }
 }
