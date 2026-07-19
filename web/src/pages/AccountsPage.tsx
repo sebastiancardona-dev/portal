@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Copy, KeyRound, UserX } from 'lucide-react'
+import { Check, Copy, KeyRound, Pencil, UserX } from 'lucide-react'
 import {
   useAccountUsers,
   useAudit,
@@ -7,6 +7,7 @@ import {
   useInvites,
   useMe,
   useMintInvite,
+  usePatchUser,
   useRevokeInvite,
 } from '../api/hooks'
 import type { AccountUser, Invite, MintedInvite } from '../api/types'
@@ -133,6 +134,112 @@ function MintInviteForm({ onMinted }: { onMinted: (minted: MintedInvite) => void
   )
 }
 
+/**
+ * Group + disabled editor for one user (the PATCH relay 05 always had, now with
+ * a face). Groups can't go empty; self-demote/disable is blocked client-side
+ * too — the auth service would 409 it as unrecoverable.
+ */
+function ManageUserPanel({ user, self, onClose }: { user: AccountUser; self: boolean; onClose: () => void }) {
+  const patch = usePatchUser()
+  const [groups, setGroups] = useState<string[]>([...user.groups].sort())
+  const [disableArmed, setDisableArmed] = useState(false)
+
+  const dirty = groups.join(' ') !== [...user.groups].sort().join(' ')
+
+  function toggleGroup(group: string) {
+    setGroups((current) =>
+      current.includes(group) ? current.filter((g) => g !== group) : [...current, group].sort(),
+    )
+  }
+
+  function save(disabled?: boolean) {
+    patch.mutate(
+      { id: user.id, groups, disabled },
+      { onSuccess: onClose },
+    )
+  }
+
+  return (
+    <div className="manage-user" role="region" aria-label={`Manage ${user.displayName}`}>
+      <div className="manage-user-head">
+        <span className="manage-user-title">
+          Manage <strong>{user.displayName}</strong>
+          <span className="account-email mono"> {user.email}</span>
+        </span>
+        {self && <span className="muted">this is you — demote/disable is blocked</span>}
+      </div>
+      <div className="manage-user-body">
+        <fieldset className="manage-groups">
+          <legend>Groups</legend>
+          {GROUPS.map((group) => (
+            <label key={group} className="manage-group">
+              <input
+                type="checkbox"
+                checked={groups.includes(group)}
+                disabled={self && group === 'admin'}
+                onChange={() => toggleGroup(group)}
+              />
+              <GroupBadge group={group} />
+            </label>
+          ))}
+          {groups.length === 0 && (
+            <span className="form-error">pick at least one group</span>
+          )}
+        </fieldset>
+        <div className="manage-actions">
+          <button
+            type="button"
+            className={dirty && groups.length > 0 ? 'btn btn-primary btn-sm' : 'btn btn-sm'}
+            disabled={!dirty || groups.length === 0 || patch.isPending}
+            onClick={() => save()}
+          >
+            {patch.isPending ? 'Saving…' : 'Save groups'}
+          </button>
+          {user.disabled ? (
+            <button
+              type="button"
+              className="btn btn-sm"
+              disabled={patch.isPending}
+              onClick={() => save(false)}
+            >
+              Re-enable account
+            </button>
+          ) : disableArmed ? (
+            <span className="revoke-confirm">
+              <button
+                type="button"
+                className="btn btn-sm btn-danger"
+                disabled={patch.isPending}
+                onClick={() => save(true)}
+              >
+                <UserX size={14} strokeWidth={1.75} />
+                {patch.isPending ? 'Disabling…' : 'Confirm disable'}
+              </button>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setDisableArmed(false)}>
+                Keep active
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              disabled={self}
+              title={self ? 'You cannot disable yourself' : 'Blocks sign-in ecosystem-wide'}
+              onClick={() => setDisableArmed(true)}
+            >
+              Disable account
+            </button>
+          )}
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+      {patch.isError && <p className="form-error">{patch.error.message}</p>}
+    </div>
+  )
+}
+
 function inviteStatus(invite: Invite): { state: 'ok' | 'off' | 'down'; label: string } {
   if (invite.revokedAt) return { state: 'down', label: 'revoked' }
   if (new Date(invite.expiresAt).getTime() < Date.now()) return { state: 'off', label: 'expired' }
@@ -177,6 +284,9 @@ export function AccountsPage() {
   const clients = useAuthClients()
   const audit = useAudit(100)
   const [minted, setMinted] = useState<MintedInvite | null>(null)
+  const [managing, setManaging] = useState<string | null>(null)
+
+  const managedUser = (users.data ?? []).find((u) => u.id === managing) ?? null
 
   if (me.data && me.data.role !== 'admin') {
     return <Quiet>admin access is required for the accounts module</Quiet>
@@ -255,7 +365,31 @@ export function AccountsPage() {
                     <StatusDot state="ok" label="active" />
                   ),
               },
+              {
+                key: 'actions',
+                label: '',
+                get: () => '',
+                render: (u) => (
+                  <button
+                    type="button"
+                    className={`btn btn-ghost btn-sm${managing === u.id ? ' btn-primary' : ''}`}
+                    aria-label={`Manage ${u.displayName}`}
+                    onClick={() => setManaging(managing === u.id ? null : u.id)}
+                  >
+                    <Pencil size={14} strokeWidth={1.75} />
+                    Manage
+                  </button>
+                ),
+              },
             ]}
+          />
+        )}
+        {managedUser && (
+          <ManageUserPanel
+            key={managedUser.id}
+            user={managedUser}
+            self={managedUser.email === me.data?.email}
+            onClose={() => setManaging(null)}
           />
         )}
       </section>

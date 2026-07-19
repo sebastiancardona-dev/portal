@@ -47,6 +47,13 @@ class ReleasesSyncServiceTest {
     }
 
     @Test
+    void repoResolvesOverrideThenAppNameAndDashOptsOut() {
+        assertThat(ReleasesSyncService.resolveRepo("auth", "auth-service")).isEqualTo("auth-service");
+        assertThat(ReleasesSyncService.resolveRepo("portal", null)).isEqualTo("portal");
+        assertThat(ReleasesSyncService.resolveRepo("observability", "-")).isNull();
+    }
+
+    @Test
     void unpublishedTimestampAndBlanksBecomeNulls() throws Exception {
         var parsed = ReleasesSyncService.parse(json(
                 "{\"tag_name\":\"v0.1.0\",\"name\":\"\",\"body\":null,\"published_at\":null}"));

@@ -89,7 +89,7 @@ function RegistryRow({ row }: { row: Row }) {
           value={repo}
           onChange={(e) => setRepo(e.target.value)}
           placeholder={row.app}
-          title="GitHub repo name when it differs from the app name (releases module)"
+          title={'GitHub repo name when it differs from the app name (releases module); "-" = no repo, skip the release sync'}
           aria-label={`GitHub repo for ${row.app}`}
         />
       </td>

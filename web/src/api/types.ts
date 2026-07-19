@@ -152,6 +152,12 @@ export interface AccountUser {
   apps: AppUsage[]
 }
 
+/** PATCH /api/accounts/users/{id} — groups must stay non-empty (auth service validates). */
+export interface PatchUserInput {
+  groups: string[]
+  disabled?: boolean
+}
+
 export interface InviteRedeemer {
   email: string
   displayName: string

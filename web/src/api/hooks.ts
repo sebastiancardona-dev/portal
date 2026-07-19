@@ -17,6 +17,7 @@ import type {
   Me,
   MintInviteInput,
   MintedInvite,
+  PatchUserInput,
   Point,
   RegistryOverride,
   RegistryOverrideInput,
@@ -230,6 +231,22 @@ export function useAudit(limit = 100) {
     enabled: admin,
     refetchInterval: POLL,
     retry: retryUnlessGone,
+  })
+}
+
+/** Group / disabled edits — the auth service refuses self-demote/disable (409). */
+export function usePatchUser() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...input }: { id: string } & PatchUserInput) =>
+      api<AccountUser>(`/api/accounts/users/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'users'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'audit'] })
+    },
   })
 }
 

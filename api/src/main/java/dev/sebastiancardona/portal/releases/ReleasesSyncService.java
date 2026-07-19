@@ -80,11 +80,25 @@ public class ReleasesSyncService {
         }
         Map<String, String> mapping = new LinkedHashMap<>();
         for (CatalogApp app : catalog.apps()) {
-            if (app.visible()) {
-                mapping.put(app.app(), repoOverrides.getOrDefault(app.app(), app.app()));
+            if (!app.visible()) {
+                continue;
+            }
+            String repo = resolveRepo(app.app(), repoOverrides.get(app.app()));
+            if (repo != null) {
+                mapping.put(app.app(), repo);
             }
         }
         return mapping;
+    }
+
+    /**
+     * Repo override "-" = this app has no GitHub repo (infra stacks like the
+     * observability or proxy compose projects) — opted out of the sync instead
+     * of 404-warning every pass.
+     */
+    static String resolveRepo(String app, String override) {
+        String repo = override != null ? override : app;
+        return "-".equals(repo) ? null : repo;
     }
 
     /**
