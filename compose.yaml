@@ -17,5 +17,16 @@ services:
       timeout: 3s
       retries: 20
 
+  # logs module (project 07) dev backing store — the image's bundled local
+  # config is fine here; prod config lives in infra stacks/observability.
+  # Seed fixture logs with: node scripts/seed-local-loki.mjs
+  loki:
+    image: grafana/loki:3.5.0
+    ports:
+      - "3100:3100"
+    volumes:
+      - portal-loki:/loki
+
 volumes:
   portal-pgdata:
+  portal-loki:

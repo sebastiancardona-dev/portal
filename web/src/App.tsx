@@ -6,6 +6,7 @@ import { AppDetailPage } from './pages/AppDetailPage'
 import { AppsPage } from './pages/AppsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { HostPage } from './pages/HostPage'
+import { LogsPage } from './pages/LogsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { AppShell } from './shell/AppShell'
 
@@ -30,6 +31,7 @@ export function App() {
         <Route path="/apps/:app" element={<AppDetailPage />} />
         <Route path="/host" element={<HostPage />} />
         <Route path="/accounts" element={<AccountsPage />} />
+        <Route path="/logs" element={<LogsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

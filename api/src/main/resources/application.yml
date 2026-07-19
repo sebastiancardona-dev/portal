@@ -86,6 +86,9 @@ portal:
   retention:
     days: ${PORTAL_RETENTION_DAYS:14}
     cron: ${PORTAL_RETENTION_CRON:0 0 4 * * *}
+  # logs module (project 07): blank = pipeline not connected in this environment
+  loki:
+    url: ${PORTAL_LOKI_URL:}
   # identity lives on the auth service (project 05); MoneyTrckr's DESIGN §17 pattern
   oidc:
     issuer: ${PORTAL_OIDC_ISSUER:http://localhost:9000}

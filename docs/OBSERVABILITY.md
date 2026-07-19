@@ -77,10 +77,31 @@ MVP** — rollout is deferred until after project 05 lands (avoids touching Mone
 repo while its OIDC migration is in flight). The Portal treats `/metrics` as optional:
 absent → usage widgets show "no data" for that app.
 
-## 5. Logging
+## 5. Logging (contract v1 — project 07, 2026-07-18)
 
-Structured JSON logging contract is defined by project 07 (see `plan/07-logs-observability.md`);
-this document only reserves the requirement. Portal MVP does not consume logs.
+Every dynamic app logs **one JSON object per line to stdout**:
+
+```json
+{"timestamp":"2026-07-18T20:15:03.123Z","level":"ERROR","logger":"d.s.m.api.LedgerController",
+ "message":"projection failed for ledger 42","requestId":"a1b2c3d4","extra":{}}
+```
+
+- `timestamp` ISO-8601 UTC · `level` TRACE/DEBUG/INFO/WARN/ERROR (uppercase) ·
+  `message` human text · `logger` origin class · `requestId` optional (correlates
+  one HTTP request end-to-end; echoed as the `X-Request-Id` response header) ·
+  anything else rides as extra JSON fields.
+- **No secrets, no PII in log lines.** Emails are allowed only where they are the
+  domain identifier (auth audit trail); tokens/passwords/keys never.
+- Spring apps: `logstash-logback-encoder` via `logback-spring.xml` — human-readable
+  console on the `local` profile, JSON everywhere else — plus a `RequestIdFilter`
+  (MDC). Reference implementation: this repo, `api/src/main/resources/logback-spring.xml`
+  and `common/RequestIdFilter.java`.
+- Static apps (nginx) are collected raw — no JSON requirement; they get `app`/`env`
+  labels but no `level`.
+- Collection: Alloy → Loki (infra `stacks/observability`, SETUP §16). Labels:
+  `job=docker`, `app`, `env`, `container`, `level` (promoted from the body).
+  The portal's logs module + DQL query these labels; everything else is
+  queried through `| json`.
 
 ## 6. Compliance snapshot (2026-07-12)
 

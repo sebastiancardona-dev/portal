@@ -29,6 +29,7 @@ const PAGES: PaletteItem[] = [
 
 /** Admin-only pages — appended when the session role allows them. */
 const ADMIN_PAGES: PaletteItem[] = [
+  { key: 'page-logs', group: 'pages', label: 'Logs', hint: '/logs', to: '/logs' },
   { key: 'page-accounts', group: 'pages', label: 'Accounts', hint: '/accounts', to: '/accounts' },
 ]
 

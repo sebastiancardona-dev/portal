@@ -45,6 +45,10 @@ cd api && PORTAL_OIDC_CLIENT_SECRET=<from step 2> \
 
 # 4. Web (separate terminal)
 cd web && npm run dev
+
+# 5. (optional) logs module data — the compose Postgres step also started a
+#    local Loki on :3100; give it something to show:
+node scripts/seed-local-loki.mjs
 ```
 
 Sign in at http://localhost:5173 as `juanse@local.dev` / `local-admin-password`

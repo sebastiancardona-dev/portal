@@ -124,6 +124,25 @@ Invites (mint form → one-time link panel → list with two-step revoke), Audit
 trail, OIDC clients. User group-editing/disable relays exist in the API
 (`PATCH /api/accounts/users/{id}`) but have no UI yet.
 
+### Logs module (landed 2026-07-18 — project 07)
+
+`/logs` (admin-only, same triple gating as accounts) queries **Loki** through the
+backend (`logs/LokiClient` → `/api/logs/**`; `PORTAL_LOKI_URL`, blank = module
+says "not connected" honestly). The headline artifact is the **DQL compiler**
+(`logs/dql/`): a DQL-inspired grammar (lexer → recursive-descent parser → AST →
+LogQL compiler) covering `filter` (==, !=, contains, `level >=`, same-label or),
+`summarize count() by bin()/fields`, `sort`, `limit`. Fields `app/env/level/
+container` are Loki labels, `message` is the line, anything else compiles through
+`| json`. The filter UI *builds* DQL into the query bar — one source of truth,
+and the compiled LogQL is echoed under it. Query shapes: raw logs (merged
+timeline, expandable rows), summarize-by-bin (chart), totals (ranked table).
+Live tail = short-poll `/api/logs/tail` with a nanosecond cursor. A `logs-query`
+widget type puts saved queries on the dashboard grid. Collection contract
+(labels, JSON schema): OBSERVABILITY.md §5; infra: `stacks/observability`
+(SETUP §16). Hard-won lesson: LogQL is full of `{braces}` — every Spring
+UriBuilder path treats them as URI template variables, so LokiClient assembles
+URIs by hand.
+
 ## Frontend architecture
 
 Design system (accepted 2026-07-13 after two rejected rounds — see plan/06 design

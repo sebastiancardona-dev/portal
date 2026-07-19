@@ -9,6 +9,7 @@ import { uptimeHeatmapDef } from './UptimeHeatmapWidget'
 import { deployFeedDef } from './DeployFeedWidget'
 import { statusListDef } from './StatusList'
 import { tableDef } from './TableWidget'
+import { logsQueryDef } from './LogsQueryWidget'
 
 /** The built-in widget set. A new widget type = one module + one line here. */
 export function registerBuiltinWidgets(): void {
@@ -21,6 +22,7 @@ export function registerBuiltinWidgets(): void {
   registerWidget(deployFeedDef)
   registerWidget(statusListDef)
   registerWidget(tableDef)
+  registerWidget(logsQueryDef)
 }
 
 export * from './registry'

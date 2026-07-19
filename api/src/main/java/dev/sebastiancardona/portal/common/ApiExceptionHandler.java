@@ -40,6 +40,19 @@ public class ApiExceptionHandler {
                 org.springframework.http.HttpStatusCode.valueOf(e.status()), e.getMessage());
     }
 
+    @ExceptionHandler(dev.sebastiancardona.portal.logs.dql.DqlException.class)
+    ProblemDetail dql(dev.sebastiancardona.portal.logs.dql.DqlException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+        // the query bar underlines the offending spot
+        problem.setProperty("position", e.position());
+        return problem;
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    ProblemDetail badArgument(IllegalArgumentException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail invalid(MethodArgumentNotValidException e) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);

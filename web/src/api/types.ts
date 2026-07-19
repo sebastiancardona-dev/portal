@@ -200,6 +200,50 @@ export interface AuditEvent {
   ip: string | null
 }
 
+/* ---------------- logs module (project 07 — admin, relayed from Loki) ---------------- */
+
+export interface LogEntry {
+  ts: string
+  line: string
+  labels: Record<string, string>
+}
+
+export interface LogSeriesPoint {
+  ts: string
+  value: number
+}
+
+export interface LogSeries {
+  labels: Record<string, string>
+  points: LogSeriesPoint[]
+}
+
+export interface LogTotal {
+  labels: Record<string, string>
+  value: number
+}
+
+/** kind decides which list is populated; logql echoes what actually ran. */
+export interface LogsResult {
+  kind: 'logs' | 'series' | 'totals'
+  logql: string
+  entries: LogEntry[]
+  series: LogSeries[]
+  totals: LogTotal[]
+}
+
+export interface LogsFields {
+  available: boolean
+  apps: string[]
+  envs: string[]
+  levels: string[]
+}
+
+export interface TailResponse {
+  entries: LogEntry[]
+  nowNs: string
+}
+
 export interface LayoutWidget {
   id: string
   type: string

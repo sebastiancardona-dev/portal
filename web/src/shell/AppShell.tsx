@@ -40,10 +40,9 @@ function EditLayoutControls() {
   )
 }
 
-/** The modules the ecosystem plan promises (projects 07/08) — the shell
+/** The modules the ecosystem plan promises (project 08) — the shell
  *  anticipates them so the sidebar reads as a console being built out. */
 const PLANNED_MODULES = [
-  { icon: Rss, label: 'Logs' },
   { icon: Clock, label: 'Versions' },
 ]
 
@@ -101,10 +100,16 @@ export function AppShell() {
 
             <span className="nav-section">Modules</span>
             {me.data?.role === 'admin' && (
-              <NavLink to="/accounts" title="Accounts — SSO users, invites, audit">
-                <Users {...ICON} aria-hidden="true" />
-                <span className="nav-label">Accounts</span>
-              </NavLink>
+              <>
+                <NavLink to="/logs" title="Logs — every container, filters + DQL">
+                  <Rss {...ICON} aria-hidden="true" />
+                  <span className="nav-label">Logs</span>
+                </NavLink>
+                <NavLink to="/accounts" title="Accounts — SSO users, invites, audit">
+                  <Users {...ICON} aria-hidden="true" />
+                  <span className="nav-label">Accounts</span>
+                </NavLink>
+              </>
             )}
             {PLANNED_MODULES.map((m) => (
               <div key={m.label} className="nav-row nav-module" title={`${m.label} — planned module`}>

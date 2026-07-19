@@ -11,6 +11,8 @@ import type {
   DeployEventGlobal,
   HostSnapshot,
   Invite,
+  LogsFields,
+  LogsResult,
   Me,
   MintInviteInput,
   MintedInvite,
@@ -253,6 +255,31 @@ export function useRevokeInvite() {
       queryClient.invalidateQueries({ queryKey: ['accounts', 'invites'] })
       queryClient.invalidateQueries({ queryKey: ['accounts', 'audit'] })
     },
+  })
+}
+
+/* ------------------------ logs module (Loki relay) ------------------------ */
+
+export function useLogsFields() {
+  const admin = useIsAdmin()
+  return useQuery({
+    queryKey: ['logs', 'fields'],
+    queryFn: () => api<LogsFields>('/api/logs/fields'),
+    enabled: admin,
+    staleTime: 60_000,
+    retry: retryUnlessGone,
+  })
+}
+
+/** One-shot query execution — the page passes the DQL it wants run. */
+export function useLogsQuery(dql: string, range: string, enabled: boolean) {
+  const admin = useIsAdmin()
+  return useQuery({
+    queryKey: ['logs', 'query', dql, range],
+    queryFn: () =>
+      api<LogsResult>(`/api/logs/query?q=${encodeURIComponent(dql)}&range=${range}`),
+    enabled: admin && enabled && dql.trim().length > 0,
+    retry: false, // DQL errors are user input errors — show them, don't hammer
   })
 }
 

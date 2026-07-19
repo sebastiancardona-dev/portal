@@ -33,7 +33,7 @@ public class WebAppConfig implements WebMvcConfigurer {
     @Controller
     static class SpaForwardController {
 
-        @GetMapping({"/", "/login", "/apps", "/apps/*", "/host", "/settings", "/accounts"})
+        @GetMapping({"/", "/login", "/apps", "/apps/*", "/host", "/settings", "/accounts", "/logs"})
         public String spa() {
             return "forward:/index.html";
         }

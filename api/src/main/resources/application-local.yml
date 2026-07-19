@@ -24,3 +24,6 @@ portal:
     # relative to api/ (the spring-boot:run working directory)
     state-dir: ${PORTAL_DEPLOY_STATE_DIR:dev-fixtures/deploy-state}
     log-file: ${PORTAL_DEPLOY_LOG_FILE:dev-fixtures/deploy-log/deploy.log}
+  loki:
+    # the compose.yaml loki service; seed data: node scripts/seed-local-loki.mjs
+    url: ${PORTAL_LOKI_URL:http://localhost:3100}

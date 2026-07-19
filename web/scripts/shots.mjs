@@ -106,6 +106,38 @@ try {
   await page.click('button:has-text("Confirm revoke")')
   await page.waitForTimeout(600)
 
+  // ---- logs module (needs the local Loki seeded: scripts/seed-local-loki.mjs) ----
+  await page.click('a[href="/logs"]')
+  await page.waitForSelector('.logs-toolbar', { timeout: 10000 })
+  await page.waitForTimeout(1200)
+  await shot('20-logs')
+
+  // a summarize query -> chart
+  await page.fill('.logs-query-input',
+    'fetch logs | filter level >= "WARN" | summarize count() by bin(15m), app')
+  await page.click('.logs-querybar button[type="submit"]')
+  await page.waitForTimeout(1500)
+  await shot('21-logs-series')
+
+  // top-N totals
+  await page.fill('.logs-query-input',
+    'fetch logs | summarize count() by app | sort desc | limit 5')
+  await page.click('.logs-querybar button[type="submit"]')
+  await page.waitForTimeout(1200)
+  await shot('22-logs-totals')
+
+  // expanded line + live tail armed
+  await page.fill('.logs-query-input', 'fetch logs | filter level == "ERROR"')
+  await page.click('.logs-querybar button[type="submit"]')
+  await page.waitForTimeout(1200)
+  await page.click('.log-row >> nth=0')
+  await page.waitForTimeout(400)
+  await shot('23-logs-expanded')
+  await page.click('button:has-text("Live tail")')
+  await page.waitForTimeout(3000)
+  await shot('24-logs-tail')
+  await page.click('button:has-text("Stop tail")')
+
   // ---- accounts, mobile ----
   await page.setViewportSize({ width: 390, height: 844 })
   await page.waitForTimeout(800)
