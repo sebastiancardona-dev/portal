@@ -18,13 +18,15 @@ function RegistryRow({ row }: { row: Row }) {
   const [visible, setVisible] = useState(row.override?.visible ?? true)
   const [healthPath, setHealthPath] = useState(row.override?.healthPath ?? '')
   const [baseHost, setBaseHost] = useState(row.override?.baseHost ?? '')
+  const [repo, setRepo] = useState(row.override?.repo ?? '')
 
   const dirty =
     displayName !== (row.override?.displayName ?? '') ||
     icon !== (row.override?.icon ?? '') ||
     visible !== (row.override?.visible ?? true) ||
     healthPath !== (row.override?.healthPath ?? '') ||
-    baseHost !== (row.override?.baseHost ?? '')
+    baseHost !== (row.override?.baseHost ?? '') ||
+    repo !== (row.override?.repo ?? '')
 
   return (
     <tr>
@@ -80,6 +82,17 @@ function RegistryRow({ row }: { row: Row }) {
           aria-label={`Base host for ${row.app}`}
         />
       </td>
+      <td>
+        <input
+          type="text"
+          className="mono"
+          value={repo}
+          onChange={(e) => setRepo(e.target.value)}
+          placeholder={row.app}
+          title="GitHub repo name when it differs from the app name (releases module)"
+          aria-label={`GitHub repo for ${row.app}`}
+        />
+      </td>
       <td className="settings-actions">
         <button
           type="button"
@@ -87,7 +100,7 @@ function RegistryRow({ row }: { row: Row }) {
           className={dirty ? 'btn btn-primary' : 'btn'}
           disabled={!dirty || save.isPending}
           onClick={() =>
-            save.mutate({ app: row.app, displayName, icon, visible, healthPath, baseHost })
+            save.mutate({ app: row.app, displayName, icon, visible, healthPath, baseHost, repo })
           }
         >
           {save.isPending ? 'Saving…' : 'Save'}
@@ -164,6 +177,7 @@ export function SettingsPage() {
                   <th>Visible</th>
                   <th>Health path</th>
                   <th>Base host</th>
+                  <th>GitHub repo</th>
                   <th />
                 </tr>
               </thead>

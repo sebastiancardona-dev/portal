@@ -204,6 +204,33 @@ export function DeployFeedPreview(): JSX.Element {
   )
 }
 
+export function ReleasesPreview(): JSX.Element {
+  return (
+    <Vignette label="Recent releases">
+      {[0, 1, 2, 3].map((i) => {
+        const y = 16 + i * 18
+        return (
+          <g key={i}>
+            <rect x={12} y={y} width={20} height={6} rx={3} fill="var(--text-2)" opacity={0.45} />
+            {/* the version tag, mono-ish block */}
+            <rect x={38} y={y} width={28} height={6} rx={3} fill="var(--text-2)" opacity={0.7} />
+            {/* deployed badge on some rows */}
+            {i % 2 === 0 && (
+              <rect x={74} y={y - 1} width={22} height={8} rx={2} fill="none" stroke="var(--ok)" strokeOpacity={0.6} strokeWidth={1} />
+            )}
+            <rect x={106} y={y} width={26} height={6} rx={3} fill="var(--text-2)" opacity={0.4} />
+          </g>
+        )
+      })}
+      <g stroke="var(--chart-grid)" strokeOpacity={0.6} strokeWidth={1}>
+        <line x1={12} x2={138} y1={31} y2={31} />
+        <line x1={12} x2={138} y1={49} y2={49} />
+        <line x1={12} x2={138} y1={67} y2={67} />
+      </g>
+    </Vignette>
+  )
+}
+
 export function StatusListPreview(): JSX.Element {
   const rows = [
     { dot: 'var(--ok)', lit: true },

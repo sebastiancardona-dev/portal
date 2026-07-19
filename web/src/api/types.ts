@@ -118,6 +118,8 @@ export interface RegistryOverride {
   healthPath: string | null
   /** URL fallback when Docker discovery is absent (test slot); bare host */
   baseHost: string | null
+  /** GitHub repo when it differs from the app name (auth → auth-service) */
+  repo: string | null
 }
 
 /** PUT body — omitted/blank fields fall back to the discovered values. */
@@ -127,6 +129,7 @@ export interface RegistryOverrideInput {
   visible?: boolean
   healthPath?: string | null
   baseHost?: string | null
+  repo?: string | null
 }
 
 /* ---------------- accounts (admin — relayed from the auth service) ---------------- */
@@ -242,6 +245,47 @@ export interface LogsFields {
 export interface TailResponse {
   entries: LogEntry[]
   nowNs: string
+}
+
+/* ---------------- releases module (project 08 — GitHub cache + deploy state) ---------------- */
+
+/** One cached GitHub release, joined with what the pipeline says is deployed. */
+export interface ReleaseInfo {
+  app: string
+  repo: string
+  tag: string
+  name: string | null
+  /** release notes markdown (GitHub-generated) */
+  body: string | null
+  prerelease: boolean
+  htmlUrl: string | null
+  publishedAt: string | null
+  deployedProd: boolean
+  deployedTest: boolean
+  /** ghcr.io/<org>/<app>:<tag> — copyable pull ref */
+  imageRef: string
+  /** GitHub compare link vs the previous release; null for the first one */
+  compareUrl: string | null
+  /** JSON string: [{name,size,downloadUrl}] — null when the release has no assets */
+  assets: string | null
+}
+
+export interface ReleasesFeed {
+  /** false = no GitHub token configured and nothing cached yet */
+  available: boolean
+  lastSyncAt: string | null
+  releases: ReleaseInfo[]
+}
+
+export interface AppReleases {
+  available: boolean
+  lastSyncAt: string | null
+  app: string
+  prodVersion: string | null
+  testVersion: string | null
+  /** stable releases prod trails the newest; null = prod not on a known release */
+  prodBehind: number | null
+  releases: ReleaseInfo[]
 }
 
 export interface LayoutWidget {

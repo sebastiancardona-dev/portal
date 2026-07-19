@@ -89,6 +89,13 @@ portal:
   # logs module (project 07): blank = pipeline not connected in this environment
   loki:
     url: ${PORTAL_LOKI_URL:}
+  # releases module (project 08): blank token = module not connected. Fine-grained
+  # read-only PAT (contents: read on ecosystem repos incl. private moneytrckr)
+  github:
+    token: ${PORTAL_GITHUB_TOKEN:}
+    org: ${PORTAL_GITHUB_ORG:sebastiancardona-dev}
+    api-url: ${PORTAL_GITHUB_API_URL:https://api.github.com}
+    sync-interval-ms: ${PORTAL_GITHUB_SYNC_INTERVAL_MS:600000}
   # identity lives on the auth service (project 05); MoneyTrckr's DESIGN §17 pattern
   oidc:
     issuer: ${PORTAL_OIDC_ISSUER:http://localhost:9000}

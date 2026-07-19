@@ -10,6 +10,7 @@ import { deployFeedDef } from './DeployFeedWidget'
 import { statusListDef } from './StatusList'
 import { tableDef } from './TableWidget'
 import { logsQueryDef } from './LogsQueryWidget'
+import { releasesDef } from './ReleasesWidget'
 
 /** The built-in widget set. A new widget type = one module + one line here. */
 export function registerBuiltinWidgets(): void {
@@ -23,6 +24,7 @@ export function registerBuiltinWidgets(): void {
   registerWidget(statusListDef)
   registerWidget(tableDef)
   registerWidget(logsQueryDef)
+  registerWidget(releasesDef)
 }
 
 export * from './registry'

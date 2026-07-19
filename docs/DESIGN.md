@@ -143,6 +143,26 @@ widget type puts saved queries on the dashboard grid. Collection contract
 UriBuilder path treats them as URI template variables, so LokiClient assembles
 URIs by hand.
 
+### Releases module (landed 2026-07-19 — project 08)
+
+`/releases` (deliberately **viewer-visible**, unlike logs: release metadata has
+no PII and cadence is good recruiter optics — Juanse's locked answer in plan/08).
+GitHub releases for every discovered app sync into Postgres (`releases` table,
+`releases/ReleasesSyncService`, 10-min `@Scheduled` + ETag conditional requests so
+unchanged repos cost no rate limit) through `releases/GitHubClient` (LokiClient
+pattern: blank `PORTAL_GITHUB_TOKEN` = honest "not connected"; the request path
+NEVER calls GitHub — cache only). Repo name defaults to the app name;
+`app_overrides.repo` (Settings → "GitHub repo") covers the two that differ
+(`auth` → `auth-service`, `portfolio` → `sebastiancardona-dev.github.io`).
+`ReleasesService` joins the cache with `DeployStateReader`: per-release
+deployed-on-prod/test markers, per-app drift ("prod is N stable releases
+behind"), and artifact refs — `ghcr.io/<org>/<app>:<tag>` pull command (image
+name = APP name, the pipeline identity triple — not the repo name), GitHub
+release/compare links, pared asset list (jsonb). Views: ecosystem feed +
+per-app timeline with expandable artifact panels; `recent-releases` widget.
+Repo ordering bite: Postgres sorts NULLs first on `DESC`, so the repository
+orders `published_at desc nulls last` explicitly.
+
 ## Frontend architecture
 
 Design system (accepted 2026-07-13 after two rejected rounds — see plan/06 design
@@ -209,5 +229,6 @@ Onboarding: two ~15-line workflow callers + `VPS_SSH_KEY` secret + Dockerfile ho
 - Postgres-as-TSDB is a deliberate, documented trade-off; the Prometheus migration is
   the case study's "evolution" chapter.
 - Out of scope for MVP: alerting, SLO/error budgets, public status page, multiple
-  named dashboards, SSE push, logs (07), versions/artifacts (08), accounts UI for
-  user group-editing/disable (relay endpoint already live).
+  named dashboards, SSE push, accounts UI for user group-editing/disable (relay
+  endpoint already live). Logs (07) and releases (08) have since landed as modules;
+  the releases deploy-to-test button stays in plan/08's backlog (read-only MVP).

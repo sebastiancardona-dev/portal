@@ -24,6 +24,7 @@ const PAGES: PaletteItem[] = [
   { key: 'page-dashboard', group: 'pages', label: 'Dashboard', hint: '/', to: '/' },
   { key: 'page-apps', group: 'pages', label: 'Apps', hint: '/apps', to: '/apps' },
   { key: 'page-host', group: 'pages', label: 'Host', hint: '/host', to: '/host' },
+  { key: 'page-releases', group: 'pages', label: 'Releases', hint: '/releases', to: '/releases' },
   { key: 'page-settings', group: 'pages', label: 'Settings', hint: '/settings', to: '/settings' },
 ]
 

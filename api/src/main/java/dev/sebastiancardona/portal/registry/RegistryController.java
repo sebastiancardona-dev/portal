@@ -30,16 +30,16 @@ public class RegistryController {
     }
 
     public record OverrideView(String app, String displayName, String icon, boolean visible,
-                               String healthPath, String baseHost) {
+                               String healthPath, String baseHost, String repo) {
 
         static OverrideView of(AppOverride o) {
             return new OverrideView(o.getApp(), o.getDisplayName(), o.getIcon(),
-                    o.isVisible(), o.getHealthPath(), o.getBaseHost());
+                    o.isVisible(), o.getHealthPath(), o.getBaseHost(), o.getRepo());
         }
     }
 
     public record OverrideRequest(String displayName, String icon, Boolean visible,
-                                  String healthPath, String baseHost) {
+                                  String healthPath, String baseHost, String repo) {
     }
 
     @GetMapping
@@ -66,6 +66,7 @@ public class RegistryController {
         override.setVisible(request.visible() == null || request.visible());
         override.setHealthPath(blankToNull(request.healthPath()));
         override.setBaseHost(stripHost(request.baseHost()));
+        override.setRepo(blankToNull(request.repo()));
         return OverrideView.of(overrides.save(override));
     }
 

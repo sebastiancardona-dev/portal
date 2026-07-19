@@ -51,6 +51,11 @@ cd web && npm run dev
 node scripts/seed-local-loki.mjs
 ```
 
+Releases module (project 08) data: start the API with
+`PORTAL_GITHUB_TOKEN="$(gh auth token)"` and the sync pulls real releases within
+seconds. Two apps need a repo override first (Settings → GitHub repo, or SQL):
+`auth` → `auth-service`, `portfolio` → `sebastiancardona-dev.github.io`.
+
 Sign in at http://localhost:5173 as `juanse@local.dev` / `local-admin-password`
 (the auth service's seeded local admin). Steps 1–2 are once per dev machine —
 the containers keep their data across restarts (step 1's DB has no volume; if

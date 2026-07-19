@@ -31,6 +31,9 @@ public class AppOverride {
     @Column(name = "base_host")
     private String baseHost;
 
+    /** GitHub repo when it differs from the app name (auth -> auth-service). */
+    private String repo;
+
     protected AppOverride() {
     }
 
@@ -80,5 +83,13 @@ public class AppOverride {
 
     public void setBaseHost(String baseHost) {
         this.baseHost = baseHost;
+    }
+
+    public String getRepo() {
+        return repo;
+    }
+
+    public void setRepo(String repo) {
+        this.repo = repo;
     }
 }

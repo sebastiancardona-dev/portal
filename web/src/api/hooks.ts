@@ -4,6 +4,7 @@ import { api, ApiError } from './client'
 import type {
   AccountUser,
   AppDetail,
+  AppReleases,
   AppSummary,
   AuditEvent,
   AuthClient,
@@ -19,6 +20,7 @@ import type {
   Point,
   RegistryOverride,
   RegistryOverrideInput,
+  ReleasesFeed,
   SeriesBucket,
   SeriesRange,
   Source,
@@ -280,6 +282,30 @@ export function useLogsQuery(dql: string, range: string, enabled: boolean) {
       api<LogsResult>(`/api/logs/query?q=${encodeURIComponent(dql)}&range=${range}`),
     enabled: admin && enabled && dql.trim().length > 0,
     retry: false, // DQL errors are user input errors — show them, don't hammer
+  })
+}
+
+/* --------------- releases module (GitHub cache, viewer-visible) --------------- */
+
+export function useReleasesFeed(limit = 20) {
+  const { authed } = useAuth()
+  return useQuery({
+    queryKey: ['releases', 'feed', limit],
+    queryFn: () => api<ReleasesFeed>(`/api/releases?limit=${limit}`),
+    enabled: authed,
+    // the backend syncs every 10 min — polling faster only re-reads the cache
+    refetchInterval: SERIES_POLL,
+  })
+}
+
+export function useAppReleases(app: string | undefined) {
+  const { authed } = useAuth()
+  return useQuery({
+    queryKey: ['releases', 'app', app],
+    queryFn: () => api<AppReleases>(`/api/releases/${encodeURIComponent(app!)}`),
+    enabled: authed && !!app,
+    refetchInterval: SERIES_POLL,
+    retry: retryUnlessGone,
   })
 }
 

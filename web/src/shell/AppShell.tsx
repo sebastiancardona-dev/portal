@@ -40,11 +40,9 @@ function EditLayoutControls() {
   )
 }
 
-/** The modules the ecosystem plan promises (project 08) — the shell
- *  anticipates them so the sidebar reads as a console being built out. */
-const PLANNED_MODULES = [
-  { icon: Clock, label: 'Versions' },
-]
+/** Planned modules (none right now — project 08 closed the list). The shell
+ *  keeps the affordance so future plans can read as a console being built out. */
+const PLANNED_MODULES: { icon: typeof Clock; label: string }[] = []
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 
@@ -111,6 +109,10 @@ export function AppShell() {
                 </NavLink>
               </>
             )}
+            <NavLink to="/releases" title="Releases — versions, deploys, artifacts">
+              <Clock {...ICON} aria-hidden="true" />
+              <span className="nav-label">Releases</span>
+            </NavLink>
             {PLANNED_MODULES.map((m) => (
               <div key={m.label} className="nav-row nav-module" title={`${m.label} — planned module`}>
                 <m.icon {...ICON} aria-hidden="true" />
