@@ -166,7 +166,9 @@ orders `published_at desc nulls last` explicitly.
 ## Frontend architecture
 
 Design system (accepted 2026-07-13 after two rejected rounds — see plan/06 design
-history): **dark-only OLED slate** from the ui-ux-pro-max skill. Page `#0F172A`, cards
+history): **OLED slate, dark default + light variant** (light added 2026-07-19 for
+recruiter visits; toggle in the topbar, stored choice wins, first visit follows the
+OS preference). Dark: page `#0F172A`, cards
 `#1E293B` with always-visible `#334155` borders, ink `#F8FAFC/#94A3B8/#64748B`
 (contrast law: ≥4.5:1, `--text-3` only for ≤12px auxiliary), green `#22C55E` as the
 single interaction accent, Inter for UI + JetBrains Mono for data, lucide-react icons.
@@ -194,7 +196,8 @@ web/src
 ├── shell/        sidebar (OBSERVE / APPS w/ live status dots / MODULES 07-08-05
 │                 "soon" slots / CONFIGURE), topbar (Pulse strip = live host-CPU
 │                 sparkline + N/N UP lamp, Ctrl+K command palette, edit-layout)
-└── theme/        tokens.css — the single token source (dark-only)
+└── theme/        tokens.css — the single token source (dark default + light via
+                  html[data-theme]); theme.ts — init/toggle + localStorage
 ```
 
 Default layout (served when a user has none): host CPU/memory/latency stat tiles +

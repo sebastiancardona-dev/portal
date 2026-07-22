@@ -6,14 +6,17 @@ import {
   Clock,
   LayoutDashboard,
   LogOut,
+  Moon,
   Pencil,
   Rss,
   Search,
   Server,
   Settings,
+  Sun,
   Users,
 } from 'lucide-react'
 import { logout } from '../api/client'
+import { currentTheme, toggleTheme } from '../theme/theme'
 import { useApps, useMe } from '../api/hooks'
 import { appStatusState, StatusDot } from '../ui'
 import { CommandPalette } from './CommandPalette'
@@ -45,6 +48,22 @@ function EditLayoutControls() {
 const PLANNED_MODULES: { icon: typeof Clock; label: string }[] = []
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState(currentTheme)
+  const dark = theme === 'dark'
+  return (
+    <button
+      type="button"
+      className="btn btn-ghost btn-sm btn-icon"
+      onClick={() => setTheme(toggleTheme())}
+      title={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+    >
+      {dark ? <Sun {...ICON} aria-hidden="true" /> : <Moon {...ICON} aria-hidden="true" />}
+    </button>
+  )
+}
 
 export function AppShell() {
   const apps = useApps()
@@ -149,6 +168,7 @@ export function AppShell() {
             <span className="topbar-user" title={me.data ? `${me.data.name} · ${me.data.role}` : undefined}>
               {me.data?.email ?? ''}
             </span>
+            <ThemeToggle />
             <button
               type="button"
               className="btn btn-ghost btn-sm btn-icon"

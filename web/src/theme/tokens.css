@@ -1,18 +1,24 @@
 /*
- * Portal design tokens — Dark Mode (OLED), dark ONLY.
+ * Portal design tokens — dark (default) + light, both slate + green.
  *
- * One theme, tested, correct. Slate surfaces (#0F172A page, #1E293B cards),
- * VISIBLE #334155 card borders, green (#22C55E) as the single interaction
- * accent, Inter for UI, JetBrains Mono for data. Status is always icon/label
- * + color, never color alone.
+ * Dark: slate surfaces (#0F172A page, #1E293B cards), VISIBLE #334155 card
+ * borders, green (#22C55E) as the single interaction accent, Inter for UI,
+ * JetBrains Mono for data. Status is always icon/label + color, never color
+ * alone. Light: same structure over white cards; the accent deepens to
+ * green-700 so accent-colored text stays legible on white.
  *
- * CONTRAST LAW: every piece of text >= 4.5:1 against what it sits on.
- * --text-3 (#64748B) is the DIMMEST allowed text and only for <=12px
- * auxiliary labels. Axis ticks and legends wear --text-2 (#94A3B8).
- * Every SVG <text> node carries an explicit fill from these tokens.
+ * CONTRAST LAW (both themes): every piece of text >= 4.5:1 against what it
+ * sits on. --text-3 is the DIMMEST allowed text and only for <=12px
+ * auxiliary labels. Axis ticks and legends wear --text-2. Every SVG <text>
+ * node carries an explicit fill from these tokens.
+ *
+ * Theme switching: <html data-theme="light"> flips the palette (set before
+ * first paint by src/theme/theme.ts; persisted in localStorage).
  */
 
 :root {
+  color-scheme: dark;
+
   /* type */
   --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
@@ -72,6 +78,59 @@
   --radius-sm: 8px;
   --shadow: 0 1px 3px rgb(0 0 0 / 0.4);
   --ease: 150ms ease-out;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* surfaces — white cards on a slate-100 page, borders one step darker */
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #cbd5e1;
+  --border-strong: #94a3b8;
+
+  /* ink — slate-900 primary; --text-2 (#475569) clears 4.5:1 on white */
+  --text: #0f172a;
+  --text-2: #475569;
+  --text-3: #64748b;
+
+  /* accent deepens to green-700: 4.5:1 as text on white; white ink on it */
+  --accent: #15803d;
+  --accent-ink: #ffffff;
+
+  /* status — 700-weight variants, all >=4.5:1 on white as text */
+  --ok: #15803d;
+  --warn: #b45309;
+  --down: #dc2626;
+  --status-unknown: #64748b;
+
+  /* categorical series — same hue order, darkened to >=3:1 on white marks */
+  --series-1: #2563eb;
+  --series-2: #047857;
+  --series-3: #a16207;
+  --series-4: #166534;
+  --series-5: #6d28d9;
+  --series-6: #dc2626;
+  --series-7: #be185d;
+  --series-8: #c2410c;
+
+  /* sequential ramp flipped: pale -> deep on light, so seqColor()'s
+     "start at step 4" rule keeps clearing 3:1 against the card surface */
+  --seq-1: #eff6ff;
+  --seq-2: #bfdbfe;
+  --seq-3: #93c5fd;
+  --seq-4: #3b82f6;
+  --seq-5: #2563eb;
+  --seq-6: #1d4ed8;
+  --seq-7: #1e3a8a;
+
+  /* chart chrome */
+  --chart-grid: #cbd5e1;
+  --chart-baseline: #94a3b8;
+  --chart-crosshair: #94a3b8;
+
+  --shadow: 0 1px 3px rgb(15 23 42 / 0.12);
 }
 
 * {

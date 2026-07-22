@@ -11,9 +11,11 @@ import '@fontsource/jetbrains-mono/500.css'
 import './theme/tokens.css'
 import './app.css'
 import { AuthProvider } from './auth/AuthContext'
+import { initTheme } from './theme/theme'
 import { registerBuiltinWidgets } from './widgets'
 import { App } from './App'
 
+initTheme()
 registerBuiltinWidgets()
 
 const queryClient = new QueryClient({

@@ -14,8 +14,9 @@ export function slotColor(slot: number): string {
 /** Sequential ramp step for a 0..1 magnitude (one hue — never status colors). */
 export function seqColor(fraction: number): string {
   const f = Math.min(Math.max(fraction, 0), 1)
-  // dark theme: the ramp runs dim -> bright; start at step 4 so the fill
-  // always clears 3:1 against the card surface
+  // the ramp runs dim -> vivid against the card surface in BOTH themes (the
+  // light palette flips the token values); start at step 4 so the fill
+  // always clears 3:1
   const step = 4 + Math.min(3, Math.floor(f * 4))
   return `var(--seq-${step})`
 }
